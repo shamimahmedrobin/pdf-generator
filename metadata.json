@@ -1,0 +1,6 @@
+{
+  "name": "সহজ পিডিএফ মেকার ও ড্যাশবোর্ড (PDF Maker & Dashboard)",
+  "description": "অনলাইনে সহজে যেকোনো পিডিএফ আপলোড করে ডেমো টেমপ্লেট হিসেবে সংরক্ষণ, তথ্য পূরণ করে নতুন PDF জেনারেট, ডাউনলোড এবং পূর্ণাঙ্গ ড্যাশবোর্ড সুবিধা।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
