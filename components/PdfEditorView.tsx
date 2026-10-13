@@ -198,8 +198,12 @@ export const PdfEditorView: React.FC<PdfEditorViewProps> = ({
     setIsGenerating(true);
     setGenerationStage(lang === 'bn' ? 'পিডিএফ প্রস্তুত হচ্ছে...' : 'Preparing PDF...');
 
+    const targetFileName =
+      currentDoc.title?.includes('সংশোধন') || currentDoc.title?.includes('ফরম')
+        ? 'correction_form.pdf'
+        : `${(currentDoc.title || 'document').replace(/\s+/g, '_')}_${currentDoc.docNumber || 'DOC'}.pdf`;
     const success = await generateAndDownloadPdf({
-      fileName: `${currentDoc.title.replace(/\s+/g, '_')}_${currentDoc.docNumber || 'DOC'}.pdf`,
+      fileName: targetFileName,
       elementId: 'pdf-render-area',
       onProgress: (_, stage) => setGenerationStage(stage)
     });

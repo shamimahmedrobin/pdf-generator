@@ -277,18 +277,21 @@ export default function SinglePagePdfMaker() {
     // If on mobile and in form tab, activate preview tab first so DOM is visible
     if (activeTabMobile !== 'preview') {
       setActiveTabMobile('preview');
-      await new Promise((r) => setTimeout(r, 150));
+      for (let i = 0; i < 15; i++) {
+        await new Promise((r) => setTimeout(r, 40));
+        const el = document.getElementById('pdf-render-area');
+        if (el && el.offsetHeight > 0) break;
+      }
     }
 
-    let fileName = 'Document.pdf';
+    let fileName = 'correction_form.pdf';
     let docTitle = 'ডকুমেন্ট';
     let docNumber = 'DOC-001';
 
     if (activeOption === 'Form') {
-      docTitle = `ফরম-২_${formData.applicantName || 'সংশোধন'}`;
+      docTitle = 'ফরম-২ জাতীয় পরিচয়পত্র বা তথ্য-উপাত্ত সংশোধনের আবেদন';
       docNumber = formData.serialNo || 'NIDCA';
-      const cleanSerial = (formData.serialNo || 'NIDCA').replace(/[^\w\d-_]/g, '_');
-      fileName = `Form-2_NID_${cleanSerial}.pdf`;
+      fileName = 'correction_form.pdf';
     } else if (activeOption === 'Nid') {
       docTitle = `NID_${nidData.nameBangla || 'জাতীয়_পরিচয়পত্র'}`;
       docNumber = nidData.nidNumber || '1533151575';
@@ -321,10 +324,11 @@ export default function SinglePagePdfMaker() {
       };
       saveHistory([newHistoryItem, ...generatedDocs]);
 
-      setStatusMessage('✓ পিডিএফ সফলভাবে জেনারেট ও ডাউনলোড সম্পন্ন হয়েছে!');
+      setStatusMessage(`✓ ${fileName} সফলভাবে ডাউনলোড সম্পন্ন হয়েছে!`);
       setTimeout(() => setStatusMessage(''), 5000);
     } else {
-      setStatusMessage('⚠️ পিডিএফ জেনারেট করতে সমস্যা হয়েছে, ব্রাউজার রিফ্রেশ করে পুনরায় চেষ্টা করুন অথবা সরাসরি প্রিন্ট বাটনে ক্লিক করুন।');
+      setStatusMessage('⚠️ পিডিএফ তৈরিতে সমস্যা হয়েছে। দয়া করে পুনরায় চেষ্টা করুন।');
+      setTimeout(() => setStatusMessage(''), 4000);
     }
   };
 
@@ -333,16 +337,16 @@ export default function SinglePagePdfMaker() {
     setActiveOption(item.type);
     setStatusMessage(`${item.title} পুনরায় প্রস্তুত করা হচ্ছে...`);
     setTimeout(async () => {
-      const cleanType = item.type || 'Document';
+      const downloadName = item.type === 'Form' ? 'correction_form.pdf' : `${item.type || 'Document'}_${Date.now()}.pdf`;
       await generateAndDownloadPdf({
-        fileName: `${cleanType}_${Date.now()}.pdf`,
+        fileName: downloadName,
         elementId: 'pdf-render-area'
       });
       const updated = generatedDocs.map((d) =>
         d.id === item.id ? { ...d, downloadCount: d.downloadCount + 1 } : d
       );
       saveHistory(updated);
-      setStatusMessage('✓ পিডিএফ ডাউনলোড সম্পন্ন হয়েছে!');
+      setStatusMessage(`✓ ${downloadName} ডাউনলোড সম্পন্ন হয়েছে!`);
       setTimeout(() => setStatusMessage(''), 4000);
     }, 400);
   };
@@ -1300,7 +1304,9 @@ export default function SinglePagePdfMaker() {
           {/* ================= RIGHT COLUMN: RESPONSIVE LIVE PREVIEW ================= */}
           <div
             className={`lg:col-span-7 space-y-4 ${
-              activeTabMobile === 'preview' ? 'block' : 'hidden lg:block'
+              activeTabMobile === 'preview'
+                ? 'block'
+                : 'max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:-left-[9999px] max-lg:top-0 lg:block'
             }`}
           >
             {/* Top Toolbar: Zoom controls & Primary Generate Action */}
