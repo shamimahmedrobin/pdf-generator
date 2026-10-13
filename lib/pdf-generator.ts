@@ -22,35 +22,30 @@ export async function generateAndDownloadPdf({
   elementId = 'pdf-render-area',
   onProgress
 }: GeneratePdfOptions = {}): Promise<boolean> {
-  let tempContainer: HTMLDivElement | null = null;
-  let parentWrapper: HTMLElement | null = null;
-  let prevTransform = '';
-  let prevOrigin = '';
-  let prevPosition = '';
+  let sandboxContainer: HTMLDivElement | null = null;
 
   try {
     if (typeof window === 'undefined') return false;
 
     onProgress?.(10, 'ডকুমেন্ট প্রস্তুত করা হচ্ছে...');
 
-    // Locate source element with retry
+    // Locate source element with retry for smooth tab switching
     let sourceElement = document.getElementById(elementId);
     if (!sourceElement) {
-      // Short delay retry for mobile tab transitions
       await new Promise((r) => setTimeout(r, 120));
       sourceElement = document.getElementById(elementId);
     }
 
     if (!sourceElement) {
-      throw new Error(`Element with id "${elementId}" not found in document.`);
+      throw new Error(`Element "${elementId}" not found.`);
     }
 
-    // Wait for fonts to settle (safety timeout 500ms)
+    // Wait for document fonts to settle
     if (typeof document !== 'undefined' && document.fonts) {
       try {
         await Promise.race([
           document.fonts.ready,
-          new Promise((resolve) => setTimeout(resolve, 500))
+          new Promise((resolve) => setTimeout(resolve, 300))
         ]);
       } catch {
         // Continue even if font ready promise times out
@@ -59,7 +54,7 @@ export async function generateAndDownloadPdf({
 
     onProgress?.(25, 'লাইব্রেরি লোড করা হচ্ছে...');
 
-    // Dynamically import libraries with robust fallback resolution
+    // Dynamically import libraries
     const html2canvasModule = await import('html2canvas');
     const html2canvas =
       (html2canvasModule as any).default || html2canvasModule;
@@ -76,106 +71,69 @@ export async function generateAndDownloadPdf({
 
     onProgress?.(45, 'লেআউট অপ্টিমাইজ ও রেন্ডার হচ্ছে...');
 
-    let canvas: HTMLCanvasElement | null = null;
+    // Create a pristine fixed container at (0,0) behind the dark UI (z-index: -9999)
+    // This isolates the element completely from zoom/scale transforms and responsive overflow
+    sandboxContainer = document.createElement('div');
+    sandboxContainer.id = 'pdf-export-sandbox';
+    sandboxContainer.style.position = 'fixed';
+    sandboxContainer.style.top = '0px';
+    sandboxContainer.style.left = '0px';
+    sandboxContainer.style.width = '794px';
+    sandboxContainer.style.minHeight = '1123px';
+    sandboxContainer.style.backgroundColor = '#ffffff';
+    sandboxContainer.style.zIndex = '-9999';
+    sandboxContainer.style.opacity = '1';
+    sandboxContainer.style.pointerEvents = 'none';
+    sandboxContainer.style.overflow = 'visible';
 
-    // Strategy 1: Direct capture of rendered DOM (Most accurate fonts, letterforms & styles)
-    try {
-      parentWrapper = sourceElement.parentElement as HTMLElement | null;
-      if (parentWrapper) {
-        prevTransform = parentWrapper.style.transform;
-        prevOrigin = parentWrapper.style.transformOrigin;
-        prevPosition = parentWrapper.style.position;
-        // Temporarily reset preview scaling so html2canvas captures full 1:1 crisp size
-        parentWrapper.style.transform = 'none';
-      }
+    // Deep clone the source element
+    const clonedElement = sourceElement.cloneNode(true) as HTMLElement;
+    clonedElement.style.transform = 'none';
+    clonedElement.style.boxShadow = 'none';
+    clonedElement.style.margin = '0';
+    clonedElement.style.width = '794px';
+    clonedElement.style.minHeight = '1123px';
+    clonedElement.style.display = 'flex';
+    clonedElement.style.flexDirection = 'column';
 
-      await new Promise((r) => setTimeout(r, 60));
+    sandboxContainer.appendChild(clonedElement);
+    document.body.appendChild(sandboxContainer);
 
-      const elWidth = sourceElement.offsetWidth || 794;
-      const elHeight = sourceElement.offsetHeight || 1123;
+    // Wait for DOM paint and layout to stabilize
+    await new Promise((resolve) => setTimeout(resolve, 80));
 
-      canvas = await html2canvas(sourceElement, {
-        scale: 1.5, // 1.5x gives ~150 DPI crisp vector print without mobile GPU texture limit overflow
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: elWidth,
-        height: elHeight,
-        windowWidth: 1200,
-        windowHeight: 1600,
-        scrollX: 0,
-        scrollY: 0
-      });
-    } catch (captureErr) {
-      console.warn('Direct capture failed, trying sandbox fallback:', captureErr);
-      canvas = null;
-    } finally {
-      // Always restore parent transform immediately
-      if (parentWrapper) {
-        parentWrapper.style.transform = prevTransform;
-        if (prevOrigin) parentWrapper.style.transformOrigin = prevOrigin;
-        if (prevPosition) parentWrapper.style.position = prevPosition;
-      }
-    }
+    const renderWidth = 794;
+    const renderHeight = clonedElement.offsetHeight || 1123;
 
-    // Strategy 2: Sandbox clone fallback if Strategy 1 failed
-    if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      onProgress?.(55, 'বিকল্প পদ্ধতিতে রেন্ডার করা হচ্ছে...');
-      tempContainer = document.createElement('div');
-      tempContainer.id = 'pdf-render-sandbox';
-      tempContainer.style.position = 'fixed';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '0px';
-      tempContainer.style.width = '794px';
-      tempContainer.style.minHeight = '1123px';
-      tempContainer.style.backgroundColor = '#ffffff';
-      tempContainer.style.zIndex = '-9999';
-      tempContainer.style.opacity = '1';
-      tempContainer.style.pointerEvents = 'none';
-      tempContainer.style.overflow = 'hidden';
+    // Capture with html2canvas (never taint canvas so toDataURL never throws SecurityError)
+    const canvas = await html2canvas(clonedElement, {
+      scale: 1.5, // Crisp ~150 DPI vector print
+      useCORS: true,
+      allowTaint: false, // CRITICAL: NEVER TAINT CANVAS
+      backgroundColor: '#ffffff',
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      width: renderWidth,
+      height: renderHeight,
+      logging: false
+    });
 
-      const clonedElement = sourceElement.cloneNode(true) as HTMLElement;
-      clonedElement.style.transform = 'none';
-      clonedElement.style.boxShadow = 'none';
-      clonedElement.style.margin = '0';
-      clonedElement.style.width = '794px';
-      clonedElement.style.minHeight = '1123px';
-      clonedElement.style.display = 'flex';
-
-      tempContainer.appendChild(clonedElement);
-      document.body.appendChild(tempContainer);
-
-      await new Promise((resolve) => setTimeout(resolve, 80));
-
-      canvas = await html2canvas(clonedElement, {
-        scale: 1.5,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        scrollX: 0,
-        scrollY: 0
-      });
+    // Clean up sandbox immediately
+    if (sandboxContainer && sandboxContainer.parentNode) {
+      sandboxContainer.parentNode.removeChild(sandboxContainer);
+      sandboxContainer = null;
     }
 
     if (!canvas || canvas.width === 0 || canvas.height === 0) {
-      throw new Error('Failed to generate document canvas.');
+      throw new Error('Failed to create canvas.');
     }
 
-    onProgress?.(75, 'পিডিএফ ফাইল তৈরি করা হচ্ছে...');
+    onProgress?.(70, 'পিডিএফ তৈরি করা হচ্ছে...');
 
-    // Convert canvas to image format safely
-    let imgFormat = 'JPEG';
-    let imgData: string | HTMLCanvasElement = canvas;
-    try {
-      imgData = canvas.toDataURL('image/jpeg', 0.95);
-      imgFormat = 'JPEG';
-    } catch {
-      // Direct canvas fallback if toDataURL has security/taint restriction
-      imgData = canvas;
-      imgFormat = 'JPEG';
-    }
+    // Convert canvas to image safely
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
     // A4 dimensions in mm
     const pdf = new JsPdfConstructor({
@@ -191,27 +149,27 @@ export async function generateAndDownloadPdf({
 
     // Single page (Form-2, NID, and Certificate fit on 1 A4 page)
     if (contentHeightMm <= 300) {
-      pdf.addImage(imgData as any, imgFormat, 0, 0, pageWidth, pageHeight, undefined, 'FAST');
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight, undefined, 'FAST');
     } else {
       let heightLeft = contentHeightMm;
       let position = 0;
 
       // Page 1
-      pdf.addImage(imgData as any, imgFormat, 0, position, pageWidth, contentHeightMm, undefined, 'FAST');
+      pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, contentHeightMm, undefined, 'FAST');
       heightLeft -= pageHeight;
 
       // Multi-page document support
       while (heightLeft > 5) {
         position = heightLeft - contentHeightMm;
         pdf.addPage();
-        pdf.addImage(imgData as any, imgFormat, 0, position, pageWidth, contentHeightMm, undefined, 'FAST');
+        pdf.addImage(imgData, 'JPEG', 0, position, pageWidth, contentHeightMm, undefined, 'FAST');
         heightLeft -= pageHeight;
       }
     }
 
     onProgress?.(90, 'ডাউনলোড সম্পন্ন হচ্ছে...');
 
-    // Exact requested safe filename: correction_form.pdf (or clean ASCII name)
+    // Exact requested safe filename: correction_form.pdf
     let safeFileName = 'correction_form.pdf';
     if (fileName) {
       const cleanBase = fileName
@@ -222,43 +180,32 @@ export async function generateAndDownloadPdf({
       safeFileName = `${cleanBase || 'correction_form'}.pdf`;
     }
 
-    // Direct programmatic download without opening blank tabs (_blank)
-    let downloaded = false;
-    try {
-      // Primary: jsPDF standard save method (safest on all mobile & desktop browsers)
-      pdf.save(safeFileName);
-      downloaded = true;
-    } catch (saveErr) {
-      console.warn('pdf.save failed, falling back to Blob URL anchor:', saveErr);
-      try {
-        const pdfBlob = pdf.output('blob');
-        const blobUrl = URL.createObjectURL(pdfBlob);
-        const downloadLink = document.createElement('a');
-        downloadLink.href = blobUrl;
-        downloadLink.download = safeFileName;
-        downloadLink.style.display = 'none';
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        downloaded = true;
-        setTimeout(() => {
-          if (downloadLink.parentNode) {
-            downloadLink.parentNode.removeChild(downloadLink);
-          }
-          URL.revokeObjectURL(blobUrl);
-        }, 5000);
-      } catch (blobErr) {
-        console.error('Blob anchor download fallback error:', blobErr);
+    // Direct programmatic anchor download (no blank target popup)
+    const pdfBlob = pdf.output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = blobUrl;
+    downloadLink.download = safeFileName;
+    downloadLink.style.display = 'none';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    setTimeout(() => {
+      if (downloadLink.parentNode) {
+        downloadLink.parentNode.removeChild(downloadLink);
       }
-    }
+      URL.revokeObjectURL(blobUrl);
+    }, 10000);
 
     onProgress?.(100, 'সম্পন্ন হয়েছে!');
-    return downloaded || true;
+    return true;
   } catch (error) {
     console.error('PDF Generation Error:', error);
     return false;
   } finally {
-    if (tempContainer && tempContainer.parentNode) {
-      tempContainer.parentNode.removeChild(tempContainer);
+    if (sandboxContainer && sandboxContainer.parentNode) {
+      sandboxContainer.parentNode.removeChild(sandboxContainer);
     }
   }
 }
