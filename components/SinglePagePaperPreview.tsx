@@ -80,7 +80,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
             <div className="flex justify-end items-end my-1 text-[11px]">
               <span className="font-normal mr-2">{t('ক্রমিক নম্বর')} :</span>
               <div className="w-[200px] border-b border-dotted border-black flex items-end">
-                <span className="px-1 tracking-wider tabular-nums font-bold">
+                <span className="px-1 tracking-wider tabular-nums font-normal">
                   {formData.serialNo || 'NIDCA5002923842'}
                 </span>
               </div>
@@ -94,14 +94,14 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                   <span className="w-52 shrink-0">{t('(ক) নাম')}</span>
                   <span className="mr-2">:</span>
                   <div className="flex-1 border-b border-dotted border-black flex items-end min-h-[17px]">
-                    <span className="px-1 font-bold">{t(formData.applicantName || 'মোঃ রবিউল্লাহ')}</span>
+                    <span className="px-1 font-semibold">{t(formData.applicantName || 'মোঃ রবিউল্লাহ')}</span>
                   </div>
                 </div>
                 <div className="flex items-end">
                   <span className="w-52 shrink-0">{t('(খ) জাতীয় পরিচিতি নম্বর (NID)')}</span>
                   <span className="mr-2">:</span>
                   <div className="flex-1 border-b border-dotted border-black flex items-end min-h-[17px]">
-                    <span className="px-1 font-bold tabular-nums">{formData.applicantNid || '8732934032'}</span>
+                    <span className="px-1 font-semibold tabular-nums">{formData.applicantNid || '8732934032'}</span>
                   </div>
                 </div>
               </div>
@@ -117,14 +117,14 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                   <span className="w-52 shrink-0">{t('(ক) নাম')}</span>
                   <span className="mr-2">:</span>
                   <div className="flex-1 border-b border-dotted border-black h-[17px] flex items-end">
-                    <span className="px-1 font-bold">{t(formData.guardianName || '')}</span>
+                    <span className="px-1 font-semibold">{t(formData.guardianName || '')}</span>
                   </div>
                 </div>
                 <div className="flex items-end">
                   <span className="w-52 shrink-0">{t('(খ) জাতীয় পরিচিতি নম্বর (NID)')}</span>
                   <span className="mr-2">:</span>
                   <div className="flex-1 border-b border-dotted border-black h-[17px] flex items-end">
-                    <span className="px-1 font-bold tabular-nums">{formData.guardianNid || ''}</span>
+                    <span className="px-1 font-semibold tabular-nums">{formData.guardianNid || ''}</span>
                   </div>
                 </div>
               </div>
@@ -185,16 +185,16 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
 
                         return (
                           <tr key={row.id || index} className="border-b border-black h-[25px]">
-                            <td className="border-r border-black px-2 text-left font-bold align-middle">
+                            <td className="border-r border-black px-2 text-left font-semibold align-middle">
                               {displaySubject ? t(displaySubject) : ''}
                             </td>
-                            <td className="border-r border-black px-2 text-left font-bold align-middle tabular-nums">
+                            <td className="border-r border-black px-2 text-left font-semibold align-middle tabular-nums">
                               {row.currentData ? t(row.currentData) : ''}
                             </td>
-                            <td className="border-r border-black px-2 text-left font-bold align-middle tabular-nums">
+                            <td className="border-r border-black px-2 text-left font-semibold align-middle tabular-nums">
                               {row.correctedData ? t(row.correctedData) : ''}
                             </td>
-                            <td className="px-2 text-left text-[10px] font-bold align-middle">
+                            <td className="px-2 text-left text-[10px] font-semibold align-middle">
                               {row.attachment ? t(row.attachment) : ''}
                             </td>
                           </tr>
@@ -212,7 +212,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                 <span className="font-normal">
                   {t('৪। জমাকৃত ফি এর পরিমাণ (১১ এর উপ-প্রবিধান (১) এর ক্রমিক নং ১ বা, প্রযোজ্য ক্ষেত্রে, ২ এ উল্লিখিত ফি অনুসারে)')} :{' '}
                 </span>
-                <span className="font-bold tabular-nums">
+                <span className="font-semibold tabular-nums">
                   {formData.feeAmount ? t(formData.feeAmount) : ''}
                 </span>
               </div>
@@ -221,7 +221,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                 <span className="font-normal">
                   {t('৫। প্রযোজ্য ক্ষেত্রে ফি জমা দানের রশিদ')} :{' '}
                 </span>
-                <span className="font-bold tabular-nums">
+                <span className="font-semibold tabular-nums">
                   {formData.feeReceiptNo ? t(formData.feeReceiptNo) : ''}
                 </span>
               </div>
@@ -230,7 +230,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                 <span className="font-normal">
                   {t('৬। আবেদনপত্রের সহিত সংযুক্ত দলিলাদির বিবরণ')} :{' '}
                 </span>
-                <span className="font-bold">
+                <span className="font-semibold">
                   {formData.attachedDocsSummary ? t(formData.attachedDocsSummary) : ''}
                 </span>
               </div>
@@ -240,30 +240,30 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
             <div className="mt-6 grid grid-cols-2 gap-10 text-[10.5px]">
               {/* Guardian Signature (Left) */}
               <div className="space-y-1">
-                <div className="border-t border-dashed border-black pt-1 mb-1 font-normal w-56">
+                <div className="border-t border-dashed border-gray-400 pt-1 mb-1 font-normal w-56">
                   {t('আইনানুগ অভিভাবকের স্বাক্ষর/টিপসহি (প্রযোজ্য ক্ষেত্রে)')}
                 </div>
                 <div>
                   <span>{t('নাম')} : </span>
-                  <span className="font-bold">{formData.guardianName ? t(formData.guardianName) : ''}</span>
+                  <span className="font-semibold">{formData.guardianName ? t(formData.guardianName) : ''}</span>
                 </div>
                 <div>
                   <span>{t('ঠিকানা')} : </span>
-                  <span className="font-bold">{formData.guardianAddress ? t(formData.guardianAddress) : ''}</span>
+                  <span className="font-semibold">{formData.guardianAddress ? t(formData.guardianAddress) : ''}</span>
                 </div>
                 <div>
                   <span>{t('মোবাইল নম্বর')} : </span>
-                  <span className="font-bold tabular-nums">{formData.guardianMobile || ''}</span>
+                  <span className="font-semibold tabular-nums">{formData.guardianMobile || ''}</span>
                 </div>
                 <div>
                   <span>{t('ই-মেইল (যদি থাকে)')} : </span>
-                  <span className="font-bold">{formData.guardianEmail || ''}</span>
+                  <span className="font-semibold">{formData.guardianEmail || ''}</span>
                 </div>
               </div>
 
               {/* Applicant Signature (Right) */}
               <div className="space-y-1">
-                <div className="border-t border-dashed border-black pt-1 mb-1 font-normal w-56">
+                <div className="border-t border-dashed border-gray-400 pt-1 mb-1 font-normal w-56">
                   {t('আবেদনকারীর স্বাক্ষর/টিপসহি')}
                 </div>
                 <div>
@@ -271,22 +271,22 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                 </div>
                 <div>
                   <span>{t('ঠিকানা')} : </span>
-                  <span className="font-bold">{formData.applicantAddress ? t(formData.applicantAddress) : ''}</span>
+                  <span className="font-semibold">{formData.applicantAddress ? t(formData.applicantAddress) : ''}</span>
                 </div>
                 <div>
                   <span>{t('মোবাইল নম্বর')} : </span>
-                  <span className="font-bold tabular-nums">{formData.applicantMobile || ''}</span>
+                  <span className="font-semibold tabular-nums">{formData.applicantMobile || ''}</span>
                 </div>
                 <div>
                   <span>{t('ই-মেইল (যদি থাকে)')} : </span>
-                  <span className="font-bold">{formData.applicantEmail || ''}</span>
+                  <span className="font-semibold">{formData.applicantEmail || ''}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* ================= PART - B (RECEIPT) ================= */}
-          <div className="mt-4 pt-3 border-t border-dashed border-black">
+          <div className="mt-4 pt-3 border-t border-dashed border-gray-400">
             {/* Receipt Header */}
             <div className="text-center space-y-0.5 mb-1.5">
               <h3 className="text-[12px] font-normal leading-tight">{t('অংশ - খ (ফরম-২)')}</h3>
@@ -300,7 +300,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
             <div className="flex justify-end items-end mb-2 text-[10.5px]">
               <span className="font-normal mr-2">{t('ক্রমিক নম্বর')} :</span>
               <div className="w-[200px] border-b border-dotted border-black h-[16px] flex items-end">
-                <span className="px-1 tracking-wider tabular-nums font-bold">
+                <span className="px-1 tracking-wider tabular-nums font-normal">
                   {formData.receiptSerialNo || formData.serialNo || ''}
                 </span>
               </div>
@@ -319,7 +319,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                   <div className="pl-4">{t('পরিচিতি নম্বর')}</div>
                 </div>
                 <span className="mr-2">:</span>
-                <span className="font-bold">
+                <span className="font-semibold">
                   {formData.receiptGuardianName ? t(formData.receiptGuardianName) : ''}
                 </span>
               </div>
@@ -327,7 +327,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
               <div className="flex items-center">
                 <span className="w-[340px] shrink-0">{t('(৩) আবেদনের তারিখ')}</span>
                 <span className="mr-2">:</span>
-                <span className="tabular-nums font-bold">
+                <span className="tabular-nums font-semibold">
                   {formData.receiptAppDate ? t(formData.receiptAppDate) : (formData.applicationDate ? t(formData.applicationDate) : '')}
                 </span>
               </div>
@@ -337,7 +337,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                   {t('(৪) পরবর্তী যোগাযোগের তারিখ/জাতীয় পরিচয়পত্র প্রদানের তারিখ')}
                 </span>
                 <span className="mr-2">:</span>
-                <span className="tabular-nums font-bold">
+                <span className="tabular-nums font-semibold">
                   {formData.receiptDeliveryDate ? t(formData.receiptDeliveryDate) : (formData.deliveryDate ? t(formData.deliveryDate) : '')}
                 </span>
               </div>
@@ -350,7 +350,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
               </div>
 
               <div className="text-center w-64">
-                <div className="border-t border-dashed border-black pt-1">
+                <div className="border-t border-dashed border-gray-400 pt-1">
                   <p className="font-normal">{t('দায়িত্বপ্রাপ্ত কর্মকর্তার স্বাক্ষর')}</p>
                 </div>
               </div>
@@ -394,6 +394,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                         src={nidData.photoUrl}
                         alt="NID Photo"
                         className="w-full h-full object-cover"
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center text-slate-400">
@@ -409,6 +410,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                         src={nidData.signatureUrl}
                         alt="Signature"
                         className="h-4 max-w-[78px] object-contain"
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       <span className="font-nikosh italic font-bold text-[12px] text-black leading-none tracking-wider">

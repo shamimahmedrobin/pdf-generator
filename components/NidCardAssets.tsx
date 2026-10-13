@@ -8,6 +8,7 @@ export const BangladeshEmblem: React.FC<{ className?: string }> = ({ className =
       src="/bd-govt-seal.svg"
       alt="গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের প্রতীক"
       className={`${className} object-contain shrink-0`}
+      crossOrigin="anonymous"
     />
   );
 };
@@ -24,6 +25,7 @@ export const GoldenWatermarkEmblem: React.FC<{
       alt="বাংলাদেশের জাতীয় প্রতীক জলছাপ"
       className={`${className} object-contain select-none pointer-events-none`}
       style={style}
+      crossOrigin="anonymous"
     />
   );
 };

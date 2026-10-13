@@ -12,7 +12,6 @@ import {
   Award,
   Download,
   Printer,
-  Upload,
   RotateCcw,
   ZoomIn,
   ZoomOut,
@@ -23,7 +22,6 @@ import {
   FileCheck2,
   BarChart2,
   X,
-  ImageIcon,
   Edit3,
   Menu,
   ChevronDown,
@@ -41,14 +39,6 @@ export default function SinglePagePdfMaker() {
   const [formData, setFormData] = useState<FormDataState>(DEFAULT_FORM_DATA);
   const [nidData, setNidData] = useState<NidDataState>(DEFAULT_NID_DATA);
   const [proffData, setProffData] = useState<ProffDataState>(DEFAULT_PROFF_DATA);
-
-  // Uploaded Demo PDF
-  const [uploadedDemoPdf, setUploadedDemoPdf] = useState<{
-    name: string;
-    size: number;
-    url: string;
-    uploadedAt: string;
-  } | null>(null);
 
   // Dashboard Generated Documents History
   const [generatedDocs, setGeneratedDocs] = useState<GeneratedDocItem[]>([
@@ -86,10 +76,8 @@ export default function SinglePagePdfMaker() {
   const [statusMessage, setStatusMessage] = useState('');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showHistoryInMenu, setShowHistoryInMenu] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [activeTabMobile, setActiveTabMobile] = useState<'form' | 'preview'>('form');
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const previewOuterContainerRef = useRef<HTMLDivElement>(null);
 
   // Close menu on Escape key press
@@ -141,9 +129,6 @@ export default function SinglePagePdfMaker() {
 
         const savedProff = localStorage.getItem('pdf_proff_data');
         if (savedProff) setProffData(JSON.parse(savedProff));
-
-        const savedDemo = localStorage.getItem('pdf_uploaded_demo');
-        if (savedDemo) setUploadedDemoPdf(JSON.parse(savedDemo));
 
         const savedHistory = localStorage.getItem('pdf_generated_history');
         if (savedHistory) setGeneratedDocs(JSON.parse(savedHistory));
@@ -215,26 +200,6 @@ export default function SinglePagePdfMaker() {
     } catch {}
   };
 
-  // Upload user PDF demo
-  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.name.toLowerCase().endsWith('.pdf')) {
-      const url = URL.createObjectURL(file);
-      const demoInfo = {
-        name: file.name,
-        size: file.size,
-        url,
-        uploadedAt: new Date().toLocaleDateString('bn-BD')
-      };
-      setUploadedDemoPdf(demoInfo);
-      try {
-        localStorage.setItem('pdf_uploaded_demo', JSON.stringify(demoInfo));
-      } catch {}
-      setIsUploadModalOpen(false);
-      setStatusMessage(`ডেমো PDF আপলোড সম্পন্ন: "${file.name}"`);
-      setTimeout(() => setStatusMessage(''), 4000);
-    }
-  };
 
   // Photo upload for NID
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -307,6 +272,13 @@ export default function SinglePagePdfMaker() {
   // Generate and Download PDF
   const handleGeneratePdf = async () => {
     setIsGenerating(true);
+    setStatusMessage('পিডিএফ প্রস্তুত করা হচ্ছে...');
+
+    // If on mobile and in form tab, activate preview tab first so DOM is visible
+    if (activeTabMobile !== 'preview') {
+      setActiveTabMobile('preview');
+      await new Promise((r) => setTimeout(r, 150));
+    }
 
     let fileName = 'Document.pdf';
     let docTitle = 'ডকুমেন্ট';
@@ -315,20 +287,25 @@ export default function SinglePagePdfMaker() {
     if (activeOption === 'Form') {
       docTitle = `ফরম-২_${formData.applicantName || 'সংশোধন'}`;
       docNumber = formData.serialNo || 'NIDCA';
-      fileName = `Form-2_NID_${formData.serialNo || 'NIDCA'}.pdf`;
+      const cleanSerial = (formData.serialNo || 'NIDCA').replace(/[^\w\d-_]/g, '_');
+      fileName = `Form-2_NID_${cleanSerial}.pdf`;
     } else if (activeOption === 'Nid') {
       docTitle = `NID_${nidData.nameBangla || 'জাতীয়_পরিচয়পত্র'}`;
-      docNumber = nidData.nidNumber || 'NID';
-      fileName = `NID_${nidData.nidNumber.replace(/\s+/g, '')}.pdf`;
+      docNumber = nidData.nidNumber || '1533151575';
+      const cleanNid = (nidData.nidNumber || '1533151575').replace(/\s+/g, '');
+      fileName = `NID_${cleanNid}.pdf`;
     } else {
       docTitle = proffData.subject || 'প্রত্যয়ন_পত্র';
       docNumber = proffData.refNo || 'PROFF';
-      fileName = `Proff_${proffData.personName || 'প্রত্যয়ন'}.pdf`;
+      fileName = `Proff_Certificate_${Date.now()}.pdf`;
     }
 
     const success = await generateAndDownloadPdf({
       fileName,
-      elementId: 'pdf-render-area'
+      elementId: 'pdf-render-area',
+      onProgress: (_prog, stage) => {
+        setStatusMessage(stage);
+      }
     });
 
     setIsGenerating(false);
@@ -344,26 +321,30 @@ export default function SinglePagePdfMaker() {
       };
       saveHistory([newHistoryItem, ...generatedDocs]);
 
-      setStatusMessage('পিডিএফ সফলভাবে জেনারেট ও ডাউনলোড হয়েছে!');
-      setTimeout(() => setStatusMessage(''), 4000);
+      setStatusMessage('✓ পিডিএফ সফলভাবে জেনারেট ও ডাউনলোড সম্পন্ন হয়েছে!');
+      setTimeout(() => setStatusMessage(''), 5000);
     } else {
-      setStatusMessage('পিডিএফ জেনারেট করতে সমস্যা হয়েছে, পুনরায় চেষ্টা করুন।');
+      setStatusMessage('⚠️ পিডিএফ জেনারেট করতে সমস্যা হয়েছে, ব্রাউজার রিফ্রেশ করে পুনরায় চেষ্টা করুন অথবা সরাসরি প্রিন্ট বাটনে ক্লিক করুন।');
     }
   };
 
   // Direct Re-download from dashboard
   const handleReDownload = async (item: GeneratedDocItem) => {
     setActiveOption(item.type);
+    setStatusMessage(`${item.title} পুনরায় প্রস্তুত করা হচ্ছে...`);
     setTimeout(async () => {
+      const cleanType = item.type || 'Document';
       await generateAndDownloadPdf({
-        fileName: `${item.title}.pdf`,
+        fileName: `${cleanType}_${Date.now()}.pdf`,
         elementId: 'pdf-render-area'
       });
       const updated = generatedDocs.map((d) =>
         d.id === item.id ? { ...d, downloadCount: d.downloadCount + 1 } : d
       );
       saveHistory(updated);
-    }, 300);
+      setStatusMessage('✓ পিডিএফ ডাউনলোড সম্পন্ন হয়েছে!');
+      setTimeout(() => setStatusMessage(''), 4000);
+    }, 400);
   };
 
   const handleDeleteHistory = (id: string) => {
@@ -397,17 +378,7 @@ export default function SinglePagePdfMaker() {
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            <button
-              onClick={() => setIsUploadModalOpen(true)}
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-medium text-indigo-300 bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-700/50 rounded-lg transition-colors whitespace-nowrap"
-              title="একটি ডেমো পিডিএফ আপলোড করুন"
-            >
-              <Upload className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden xs:inline">ডেমো PDF</span>
-              <span className="hidden sm:inline">আপলোড</span>
-            </button>
-
-            {/* MENU BUTTON (Replaces Dashboard) */}
+            {/* MENU BUTTON (Contains Form, NiD, Proff) */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`relative inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl border transition-all duration-200 shadow-sm cursor-pointer ${
@@ -422,7 +393,7 @@ export default function SinglePagePdfMaker() {
                 <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
               <span className="font-bold tracking-wide">Menu</span>
-              <span className="hidden xs:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700">
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 {activeOption === 'Nid' ? 'NiD' : activeOption}
               </span>
@@ -434,53 +405,26 @@ export default function SinglePagePdfMaker() {
             </button>
           </div>
         </div>
-
-        {/* Mobile 3 Options Segmented Bar (Below Navbar on small screens) */}
-        <div className="md:hidden border-t border-slate-800 px-3 py-2 bg-slate-900/80">
-          <div className="grid grid-cols-3 gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
-            <button
-              onClick={() => setActiveOption('Form')}
-              className={`flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeOption === 'Form'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Form</span>
-            </button>
-
-            <button
-              onClick={() => setActiveOption('Nid')}
-              className={`flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeOption === 'Nid'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <CreditCard className="w-3.5 h-3.5" />
-              <span>NiD</span>
-            </button>
-
-            <button
-              onClick={() => setActiveOption('Proff')}
-              className={`flex items-center justify-center gap-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                activeOption === 'Proff'
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Award className="w-3.5 h-3.5" />
-              <span>Proff</span>
-            </button>
-          </div>
-        </div>
       </header>
 
       {/* ================= STATUS BANNER ================= */}
       {statusMessage && (
-        <div className="bg-emerald-950/95 border-b border-emerald-700 text-emerald-200 text-xs py-2 px-3 text-center flex items-center justify-center gap-2 animate-in fade-in">
-          <Check className="w-3.5 h-3.5 shrink-0" />
+        <div
+          className={`border-b text-xs py-2 px-3 text-center flex items-center justify-center gap-2 animate-in fade-in transition-all ${
+            statusMessage.includes('⚠️')
+              ? 'bg-rose-950/95 border-rose-800 text-rose-200'
+              : statusMessage.includes('✓')
+              ? 'bg-emerald-950/95 border-emerald-700 text-emerald-200'
+              : 'bg-indigo-950/95 border-indigo-700 text-indigo-200'
+          }`}
+        >
+          {statusMessage.includes('✓') ? (
+            <Check className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+          ) : statusMessage.includes('⚠️') ? (
+            <X className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+          ) : (
+            <div className="w-3 h-3 border-2 border-indigo-300 border-t-transparent rounded-full animate-spin shrink-0" />
+          )}
           <span>{statusMessage}</span>
         </div>
       )}
@@ -738,7 +682,7 @@ export default function SinglePagePdfMaker() {
               {/* Collapsible History Section inside Menu */}
               {showHistoryInMenu && (
                 <div className="mt-4 pt-4 border-t border-slate-800 space-y-3 animate-in fade-in duration-200">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <div className="bg-slate-900 border border-slate-800 rounded-lg p-2.5">
                       <span className="text-[10px] text-slate-400 block">মোট তৈরি ডকুমেন্টস</span>
                       <span className="text-lg font-bold text-white font-mono">{generatedDocs.length}</span>
@@ -746,12 +690,6 @@ export default function SinglePagePdfMaker() {
                     <div className="bg-slate-900 border border-slate-800 rounded-lg p-2.5">
                       <span className="text-[10px] text-slate-400 block">মোট ডাউনলোড সংখ্যা</span>
                       <span className="text-lg font-bold text-emerald-400 font-mono">{totalDownloads}</span>
-                    </div>
-                    <div className="bg-slate-900 border border-slate-800 rounded-lg p-2.5">
-                      <span className="text-[10px] text-slate-400 block">সংরক্ষিত ডেমো PDF</span>
-                      <span className="text-lg font-bold text-indigo-400 font-mono">
-                        {uploadedDemoPdf ? '১টি ফাইল' : '০টি'}
-                      </span>
                     </div>
                   </div>
 
@@ -821,88 +759,9 @@ export default function SinglePagePdfMaker() {
         </>
       )}
 
-      {/* ================= DEMO REFERENCE CHIP (IF UPLOADED) ================= */}
-      {uploadedDemoPdf && (
-        <div className="bg-indigo-950/40 border-b border-indigo-900/40 px-3 sm:px-6 py-2">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-            <div className="flex items-center gap-2 text-indigo-300 truncate">
-              <span className="font-bold text-white shrink-0">সংরক্ষিত ডেমো PDF:</span>
-              <span className="font-mono truncate">{uploadedDemoPdf.name}</span>
-              <span className="text-slate-400 shrink-0">({(uploadedDemoPdf.size / 1024).toFixed(1)} KB)</span>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <a
-                href={uploadedDemoPdf.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-indigo-400 hover:text-indigo-200 inline-flex items-center gap-1 font-semibold"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>আসল ফাইল প্রিভিউ</span>
-              </a>
-              <button
-                onClick={() => {
-                  setUploadedDemoPdf(null);
-                  localStorage.removeItem('pdf_uploaded_demo');
-                }}
-                className="text-rose-400 hover:text-rose-300 text-[11px]"
-              >
-                মুছুন
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= STICKY MOBILE SWITCHER (স্ক্রল করলেও তথ্য পূরণ ও লাইভ প্রিভিউ উপরে স্থায়ী থাকবে) ================= */}
-      <div className="lg:hidden sticky top-16 z-30 bg-[#0F172A]/95 backdrop-blur-md border-b border-slate-800/90 px-3 py-2 shadow-lg">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex-1 flex items-center p-1 bg-slate-950/80 border border-slate-800 rounded-xl shadow-inner">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTabMobile('form');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTabMobile === 'form'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>তথ্য পূরণ</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTabMobile('preview');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTabMobile === 'preview'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>লাইভ প্রিভিউ</span>
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleReset}
-            className="p-2 text-slate-400 hover:text-amber-300 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl transition-colors shrink-0 cursor-pointer"
-            title="তথ্য রিসেট করুন"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
 
       {/* ================= MAIN WORKSPACE ================= */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 w-full space-y-4 pb-20 lg:pb-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 flex-1 w-full space-y-4 pb-24 lg:pb-6">
 
         {/* 2-Column Responsive Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
@@ -912,13 +771,13 @@ export default function SinglePagePdfMaker() {
               activeTabMobile === 'form' ? 'block' : 'hidden lg:block'
             }`}
           >
-            {/* Mode Title & Reset Action (Desktop view) */}
-            <div className="hidden lg:flex items-center justify-between pb-2 border-b border-slate-800/80">
+            {/* Mode Title & Reset Action */}
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <h2 className="text-sm font-bold text-white">
                   {activeOption === 'Form' && 'ফরম-২: আবেদন ও তথ্য এডিটর'}
-                  {activeOption === 'Nid' && 'জাতীয় পরিচয়পত্র (Front & Back) এডিটর'}
+                  {activeOption === 'Nid' && 'জাতীয় পরিচয়পত্র (NID) এডিটর'}
                   {activeOption === 'Proff' && 'প্রত্যয়ন ও নাগরিকত্ব সনদ এডিটর'}
                 </h2>
               </div>
@@ -1284,61 +1143,6 @@ export default function SinglePagePdfMaker() {
                   </div>
                 </div>
 
-                {/* Photo & Signature Upload for NID */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                  <div>
-                    <label className="block text-slate-400 font-medium mb-1">NID ছবি আপলোড</label>
-                    <div className="flex items-center gap-2.5">
-                      <label className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg cursor-pointer flex items-center gap-1.5 text-slate-200">
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        <span>ছবি নির্বাচন</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handlePhotoUpload(e)}
-                          className="hidden"
-                        />
-                      </label>
-                      {nidData.photoUrl && (
-                        <button
-                          type="button"
-                          onClick={() => saveNidData({ ...nidData, photoUrl: undefined })}
-                          className="text-rose-400 hover:underline text-[11px]"
-                        >
-                          ছবি সরান
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-slate-400 font-medium mb-1">স্বাক্ষর ছবি আপলোড (ঐচ্ছিক)</label>
-                    <div className="flex items-center gap-2.5">
-                      <label className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg cursor-pointer flex items-center gap-1.5 text-slate-200">
-                        <ImageIcon className="w-3.5 h-3.5" />
-                        <span>স্বাক্ষর নির্বাচন</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => handleSignatureUpload(e)}
-                          className="hidden"
-                        />
-                      </label>
-                      {nidData.signatureUrl ? (
-                        <button
-                          type="button"
-                          onClick={() => saveNidData({ ...nidData, signatureUrl: undefined })}
-                          className="text-rose-400 hover:underline text-[11px]"
-                        >
-                          স্বাক্ষর সরান
-                        </button>
-                      ) : (
-                        <span className="text-slate-500 text-[10px]">অটো ডিজিটাল স্বাক্ষর</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Watermark Opacity Control */}
                 <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between">
                   <div>
@@ -1358,20 +1162,6 @@ export default function SinglePagePdfMaker() {
                     <span className="text-amber-400 font-mono font-bold text-xs w-10 text-right">
                       {Math.round((nidData.watermarkOpacity ?? 0.12) * 100)}%
                     </span>
-                  </div>
-                </div>
-
-                {/* Font Information Summary */}
-                <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80 space-y-1">
-                  <div className="font-semibold text-slate-300 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    <span>এনআইডি ফন্ট কনফিগারেশন (100% অফিসিয়াল ম্যাচ):</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 text-[10.5px]">
-                    <div>• বাংলা হেডিং ও তথ্য: <span className="text-emerald-300 font-semibold">Nikosh (নিকশ)</span></div>
-                    <div>• ইংরেজি হেডিং ও নাম: <span className="text-sky-300 font-semibold">Sans-Serif (অ্যারিয়াল)</span></div>
-                    <div>• আইডি ও জন্মতারিখ: <span className="text-rose-400 font-semibold">OCR-B / Monospace লাল</span></div>
-                    <div>• জলছাপ প্রতীক: <span className="text-amber-300 font-semibold">গোল্ডেন সিকিউরিটি এম্বলম</span></div>
                   </div>
                 </div>
               </div>
@@ -1612,16 +1402,6 @@ export default function SinglePagePdfMaker() {
               </div>
             </div>
 
-            {/* Avro/Unicode Info Banner */}
-            <div className="bg-emerald-950/40 border border-emerald-800/40 rounded-lg px-3 py-1.5 flex items-center justify-between text-xs text-emerald-300">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>
-                  <strong>অভ্র ও ইউনিকোড মোড সক্রিয়:</strong> তথ্যে আপনি যেভাবে অভ্র দিয়ে লিখেছেন, প্রিভিউ ও ডাউনলোডে ঠিক সেভাবেই <strong>{selectedFont === 'sutonny' ? 'সুতোনালী এমজে (Nikosh)' : selectedFont === 'kalpurush' ? 'কালপুরুষ' : selectedFont === 'solaiman' ? 'সোলাইমান লিপি' : 'হিন্দ শিলিগুড়ি'}</strong> ফন্টে নিখুঁত বাংলা প্রদর্শিত হচ্ছে। কোনো যুক্তবর্ণ ভাঙবে বা এলোমেলো হবে না।
-                </span>
-              </span>
-            </div>
-
             {/* A4 Canvas Outer Container: dynamically responsive & centered */}
             <div
               ref={previewOuterContainerRef}
@@ -1661,60 +1441,6 @@ export default function SinglePagePdfMaker() {
         </div>
       </main>
 
-      {/* ================= UPLOAD DEMO PDF MODAL ================= */}
-      {isUploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#0F172A] border border-slate-800 rounded-xl max-w-lg w-full p-4 sm:p-6 text-slate-100 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <Upload className="w-5 h-5 text-indigo-400 shrink-0" />
-                <h3 className="text-sm sm:text-base font-bold text-white">একটি ডেমো পিডিএফ আপলোড করুন</h3>
-              </div>
-              <button
-                onClick={() => setIsUploadModalOpen(false)}
-                className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-4">
-              <p className="text-xs text-slate-400 leading-relaxed">
-                আপনার কোনো আবেদন ফরম, এনআইডি অথবা প্রত্যয়ন পিডিএফ আপলোড করে রাখুন। এটি ডেমো হিসেবে জমা থাকবে এবং দেখে দেখে তথ্য পূরণ করতে পারবেন।
-              </p>
-
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-slate-700 hover:border-indigo-500 bg-slate-900/60 hover:bg-slate-900 rounded-xl p-6 sm:p-8 text-center cursor-pointer transition-all"
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  onChange={handlePdfUpload}
-                  className="hidden"
-                />
-                <FileText className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-indigo-400 mb-2 opacity-80" />
-                <p className="text-xs sm:text-sm font-semibold text-white">
-                  এখানে ক্লিক করে আপনার PDF ফাইল সিলেক্ট করুন
-                </p>
-                <p className="text-[11px] text-slate-500 mt-1">শুধুমাত্র .pdf ফাইল সমর্থিত</p>
-              </div>
-
-              <div className="flex justify-end pt-2 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsUploadModalOpen(false)}
-                  className="px-4 py-2 text-xs text-slate-400 hover:text-white"
-                >
-                  বাতিল
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ================= FLOATING BOTTOM NAVIGATION DOCK (MOBILE THUMB-FRIENDLY) ================= */}
       <div className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-fit z-40 px-3 pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-1.5 p-1.5 bg-[#0F172A]/95 backdrop-blur-xl border border-indigo-500/40 rounded-full shadow-2xl shadow-black/90 ring-1 ring-white/10">
@@ -1750,17 +1476,20 @@ export default function SinglePagePdfMaker() {
             <span>লাইভ প্রিভিউ</span>
           </button>
 
-          {activeTabMobile === 'preview' && (
-            <button
-              type="button"
-              onClick={handleGeneratePdf}
-              disabled={isGenerating}
-              className="px-3 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
-            >
+          <button
+            type="button"
+            onClick={handleGeneratePdf}
+            disabled={isGenerating}
+            className="px-3.5 py-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer disabled:opacity-50"
+            title="পিডিএফ ডাউনলোড করুন"
+          >
+            {isGenerating ? (
+              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
               <Download className="w-3.5 h-3.5" />
-              <span>ডাউনলোড</span>
-            </button>
-          )}
+            )}
+            <span>ডাউনলোড</span>
+          </button>
         </div>
       </div>
 
