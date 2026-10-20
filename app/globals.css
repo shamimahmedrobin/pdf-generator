@@ -1,5 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-hind), 'Hind Siliguri', sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', monospace;
+}
 
 @font-face {
   font-family: 'Nikosh';
@@ -52,15 +56,15 @@
 }
 
 .font-hind {
-  font-family: 'Hind Siliguri', sans-serif !important;
+  font-family: var(--font-hind), 'Hind Siliguri', sans-serif !important;
 }
 
 .font-nid-english {
-  font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif !important;
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', Arial, Helvetica, sans-serif !important;
 }
 
 .font-nid-mono {
-  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace !important;
+  font-family: var(--font-jetbrains), 'JetBrains Mono', 'Courier New', Courier, monospace !important;
 }
 
 #pdf-render-area {

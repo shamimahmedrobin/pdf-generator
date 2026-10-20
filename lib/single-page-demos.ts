@@ -1,4 +1,4 @@
-import { FormDataState, NidDataState, ProffDataState } from '@/types/single-page-types';
+import { FormDataState, GeneratedDocItem, NidDataState, ProffDataState } from '@/types/single-page-types';
 
 export const DEFAULT_FORM_DATA: FormDataState = {
   serialNo: 'NIDCA5002923842',
@@ -63,3 +63,30 @@ export const DEFAULT_PROFF_DATA: ProffDataState = {
   authorityDesignation: 'ওয়ার্ড কাউন্সিলর (ওয়ার্ড নং ০১)',
   sealText: 'কর্তৃপক্ষ কর্তৃক যাচাইকৃত ও অনুমোদিত'
 };
+
+export const DEFAULT_GENERATED_DOCS: GeneratedDocItem[] = [
+  {
+    id: 'doc-1',
+    type: 'Form',
+    title: 'নাগরিক সেবা আবেদন ফরম',
+    docNumber: 'APP-২০২৬-৮৮৯',
+    createdAt: '০৭ অক্টোবর ২০২৬',
+    downloadCount: 2
+  },
+  {
+    id: 'doc-2',
+    type: 'Nid',
+    title: 'জাতীয় পরিচয়পত্র (NID) কার্ড প্রিন্ট',
+    docNumber: '645 289 1045',
+    createdAt: '০৭ অক্টোবর ২০২৬',
+    downloadCount: 4
+  },
+  {
+    id: 'doc-3',
+    type: 'Proff',
+    title: 'স্থায়ী নাগরিকত্ব ও চারিত্রিক প্রত্যয়ন পত্র',
+    docNumber: 'ডিএনসিসি/প্রত্যয়ন/২০২৬/৮৪২',
+    createdAt: '০৬ অক্টোবর ২০২৬',
+    downloadCount: 1
+  }
+];
