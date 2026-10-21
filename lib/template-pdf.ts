@@ -118,17 +118,60 @@ async function renderValueImage(
 
   let fontPx = field.fontSize * SCALE;
   const setFont = () => {
-    ctx.font = `${fontPx}px ${family}`;
+    ctx.font = `${field.bold ? '700 ' : ''}${fontPx}px ${family}`;
   };
   setFont();
   const maxWidth = wPx - 1 * SCALE;
+  const {r, g, b} = hexToRgb(field.color);
+  ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+  ctx.textBaseline = 'alphabetic';
+
+  // Tall boxes (room for 2+ lines) wrap long values word-by-word instead of
+  // shrinking them onto a single line — e.g. the address on an NID card.
+  const wrapLines = (text: string): string[] => {
+    const words = text.split(/\s+/).filter(Boolean);
+    const lines: string[] = [];
+    let cur = '';
+    for (const word of words) {
+      const next = cur ? `${cur} ${word}` : word;
+      if (cur && ctx.measureText(next).width > maxWidth) {
+        lines.push(cur);
+        cur = word;
+      } else {
+        cur = next;
+      }
+    }
+    if (cur) lines.push(cur);
+    return lines.length ? lines : [''];
+  };
+
+  if (field.h >= field.fontSize * 1.8) {
+    const lineHeight = () => fontPx * 1.28;
+    let lines = wrapLines(value);
+    while (
+      fontPx > 5 * SCALE &&
+      (lines.length * lineHeight() > hPx || lines.some((l) => ctx.measureText(l).width > maxWidth))
+    ) {
+      fontPx -= SCALE * 0.5;
+      setFont();
+      lines = wrapLines(value);
+    }
+    lines.forEach((line, i) => {
+      ctx.fillText(line, 0, fontPx + i * lineHeight());
+    });
+    const blobM = await new Promise<Blob | null>((res) => canvas.toBlob(res, 'image/png'));
+    if (!blobM) throw new Error('Failed to render field text');
+    return {
+      bytes: new Uint8Array(await blobM.arrayBuffer()),
+      wPt: field.w,
+      hPt: field.h,
+    };
+  }
+
   while (fontPx > 5 * SCALE && ctx.measureText(value).width > maxWidth) {
     fontPx -= SCALE * 0.5;
     setFont();
   }
-  const {r, g, b} = hexToRgb(field.color);
-  ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-  ctx.textBaseline = 'alphabetic';
   const baselineY = hPx - 1.5 * SCALE;
   ctx.fillText(value, 0, baselineY);
 

@@ -554,11 +554,15 @@ export default function TemplateMakerView() {
                         ) : (
                           val && (
                             <span
-                              className={`${fontClass} block whitespace-nowrap leading-none`}
+                              className={`${fontClass} block leading-none`}
                               style={{
                                 fontSize: f.fontSize * displayScale,
+                                fontWeight: f.bold ? 700 : 400,
                                 color: f.color,
                                 paddingTop: Math.max(0, (f.h - f.fontSize) * displayScale * 0.35),
+                                // tall boxes wrap in the generated PDF too
+                                whiteSpace: f.h >= f.fontSize * 1.8 ? 'normal' : 'nowrap',
+                                lineHeight: f.h >= f.fontSize * 1.8 ? 1.28 : undefined,
                               }}
                             >
                               {val}
@@ -682,6 +686,16 @@ export default function TemplateMakerView() {
                         />
                       </div>
                     </div>
+                    <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={!!selectedField.bold}
+                        onChange={(e) => updateField(selectedField.id, {bold: e.target.checked})}
+                        className="accent-indigo-500"
+                      />
+                      <span className="font-bold text-slate-200">B</span>
+                      বোল্ড (মোটা লেখা)
+                    </label>
                     <label className="flex items-center gap-2 text-slate-300 cursor-pointer">
                       <input
                         type="checkbox"

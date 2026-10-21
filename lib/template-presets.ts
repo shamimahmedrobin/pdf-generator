@@ -65,4 +65,50 @@ FORM2_PRESET.fields = FORM2_PRESET.fields.map((f) =>
   f.name === 'রশিদ: ক্রমিক নম্বর' ? {...f, mirrorOf: 'ক্রমিক নম্বর'} : f,
 );
 
-export const TEMPLATE_PRESETS: TemplatePreset[] = [FORM2_PRESET];
+
+/**
+ * The official NID card (front + back side by side on one Letter page,
+ * 612x792pt), as downloaded from the EC portal. The bundled PDF is that
+ * card with every personal value, the photo, both signatures and the
+ * PDF417 barcode removed — only the card frame, labels, emblem and
+ * watermark remain. Positions were measured from the original's text
+ * spans; values land exactly where the portal prints them (name and ID
+ * number bold; date of birth, ID number and blood group red). The photo
+ * and signature areas stay blank: template fields are text-only, so a
+ * card that needs a photo still goes through the built-in NID maker.
+ */
+const nf = (
+  name: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  fontSize: number,
+  font: TemplateField['font'],
+  color = '#000000',
+  bold = false,
+): Omit<TemplateField, 'id'> => ({
+  name, page: 0, x, y, w, h, fontSize, font, color, cover: false, ...(bold ? {bold: true} : {}),
+});
+
+export const NID_PRESET: TemplatePreset = {
+  id: 'nid-card-official',
+  title: 'অফিসিয়াল NID কার্ড',
+  pdfPath: 'templates/nid-card-official.pdf',
+  fields: [
+    // front
+    nf('নাম', 144, 104.5, 150, 17, 12, 'solaiman', '#000000', true),
+    nf('Name (English)', 144, 127, 150, 15, 10, 'hind', '#000000', true),
+    nf('পিতা', 144, 141, 150, 15, 10, 'solaiman'),
+    nf('মাতা', 144, 157, 150, 15, 10, 'solaiman'),
+    nf('Date of Birth', 169, 174, 115, 13, 9, 'hind', '#ff0000'),
+    nf('ID NO', 143, 187.5, 120, 13, 9, 'hind', '#ff0000', true),
+    // back
+    nf('ঠিকানা', 331, 80, 212, 22, 9, 'solaiman'),
+    nf('রক্তের গ্রুপ', 383, 122.5, 26, 11, 8, 'hind', '#ff0000'),
+    nf('জন্মস্থান', 423, 120, 100, 12, 8, 'solaiman'),
+    nf('প্রদানের তারিখ', 489, 153.5, 44, 13, 9, 'solaiman'),
+  ],
+};
+
+export const TEMPLATE_PRESETS: TemplatePreset[] = [FORM2_PRESET, NID_PRESET];
