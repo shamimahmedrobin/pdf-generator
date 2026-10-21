@@ -45,7 +45,7 @@ export const DEFAULT_NID_DATA: NidDataState = {
   cardType: 'paper',
   layout: 'side-by-side',
   showCutGuides: false,
-  watermarkOpacity: 0.12
+  watermarkOpacity: 0.5
 };
 
 export const DEFAULT_PROFF_DATA: ProffDataState = {

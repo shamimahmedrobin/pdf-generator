@@ -364,122 +364,100 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
       {activeOption === 'Nid' && (
         <div className="w-full pt-2">
           <div className="flex justify-center items-start gap-3.5">
-            {/* CARD 1: FRONT SIDE */}
-            <div className="w-[342px] h-[218px] border-[1.5px] border-black bg-white flex flex-col justify-between shrink-0 shadow-sm relative overflow-hidden">
-              {/* Header */}
-              <div className="border-b-[1.5px] border-black px-2 py-1 flex items-center bg-white">
-                <BangladeshEmblem className="w-[38px] h-[38px] shrink-0 mr-1.5" />
-                <div className="text-center flex-1 pr-3">
-                  <h3 className="font-nikosh text-[12.5px] font-bold text-black leading-tight tracking-tight">
-                    {t('গণপ্রজাতন্ত্রী বাংলাদেশ সরকার')}
-                  </h3>
-                  <p className="font-nid-english text-[8.5px] font-bold text-[#006a4e] leading-tight mt-0.5 tracking-tight">
-                    Government of the People&apos;s Republic of Bangladesh
-                  </p>
-                  <p className="text-[9.5px] text-[#dc2626] leading-tight mt-0.5 font-bold">
-                    <span className="font-nid-english tracking-tight">National ID Card</span>
-                    <span className="mx-0.5 font-normal text-black">/</span>
-                    <span className="font-nikosh tracking-normal">{t('জাতীয় পরিচয় পত্র')}</span>
-                  </p>
+            {/* CARD 1: FRONT SIDE — laid out 1:1 from the official card PDF
+                (frame 242.6x153.9pt at 1.4096 px/pt = 342x217px; every element
+                is absolutely positioned at its measured place/size/color) */}
+            <div className="w-[342px] h-[217px] border-[1.5px] border-black bg-white shrink-0 shadow-sm relative overflow-hidden">
+              {/* Header: emblem + centered title block beside it */}
+              <BangladeshEmblem className="absolute left-[6px] top-[10px] w-[39px] h-[39px]" />
+              <div className="absolute left-[46px] right-[2px] top-0 h-[67px]">
+                <div className="absolute top-[6px] left-0 right-0 text-center font-nikosh font-bold text-[21px] leading-none text-black">
+                  {t('গণপ্রজাতন্ত্রী বাংলাদেশ সরকার')}
+                </div>
+                <div className="absolute top-[30px] left-0 right-0 text-center font-nid-english text-[12px] leading-none text-[#007700]">
+                  Government of the People&apos;s Republic of Bangladesh
+                </div>
+                <div className="absolute top-[44px] left-0 right-0 flex items-baseline justify-center leading-none">
+                  <span className="font-nid-english text-[10.5px] text-[#ff0000]">National ID Card</span>
+                  <span className="mx-[3px] text-[14px] text-black">/</span>
+                  <span className="font-nikosh text-[14px] text-black">{t('জাতীয় পরিচয় পত্র')}</span>
                 </div>
               </div>
+              <div className="absolute top-[67px] left-0 right-0 border-t-[1.5px] border-black" />
 
-              {/* Body */}
-              <div className="p-2 flex gap-2 relative items-stretch flex-1">
-                {/* Left: Photo and Signature */}
-                <div className="flex flex-col items-center justify-between shrink-0 w-[80px]">
-                  <div className="w-[80px] h-[94px] border border-black bg-slate-100 overflow-hidden flex items-center justify-center">
-                    {nidData.photoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={nidData.photoUrl}
-                        alt="NID Photo"
-                        className="w-full h-full object-cover"
-                        crossOrigin="anonymous"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-slate-400">
-                        <User className="w-8 h-8 text-slate-400" />
-                      </div>
-                    )}
-                  </div>
-                  {/* Under photo: signature text / image */}
-                  <div className="mt-1 text-center w-[80px] flex items-center justify-center min-h-[18px]">
-                    {nidData.signatureUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={nidData.signatureUrl}
-                        alt="Signature"
-                        className="h-4 max-w-[78px] object-contain"
-                        crossOrigin="anonymous"
-                      />
-                    ) : (
-                      <span className="font-nikosh italic font-bold text-[12px] text-black leading-none tracking-wider">
-                        {t(nidData.nameBangla?.split(/\s+/).pop() || 'নাহিদ')}
-                      </span>
-                    )}
-                  </div>
-                </div>
+              {/* Photo — the official card has no border or line around it */}
+              <div className="absolute left-[8px] top-[75px] w-[63px] h-[85px] overflow-hidden flex items-center justify-center">
+                {nidData.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={nidData.photoUrl}
+                    alt="NID Photo"
+                    className="w-full h-full object-cover"
+                    crossOrigin="anonymous"
+                  />
+                ) : (
+                  <User className="w-8 h-8 text-slate-300" />
+                )}
+              </div>
+              {/* Holder signature under the photo */}
+              <div className="absolute left-[12px] top-[162px] w-[59px] h-[28px] flex items-center justify-center overflow-hidden">
+                {nidData.signatureUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={nidData.signatureUrl}
+                    alt="Signature"
+                    className="max-w-full max-h-full object-contain"
+                    crossOrigin="anonymous"
+                  />
+                ) : (
+                  <span className="font-nikosh italic font-bold text-[15px] text-black leading-none">
+                    {t(nidData.nameBangla?.split(/\s+/).pop() || 'নাহিদ')}
+                  </span>
+                )}
+              </div>
 
-                {/* Right: Particulars with Golden Watermark */}
-                <div className="relative flex-1 text-[9.5px] leading-normal text-black pl-1 h-full flex flex-col justify-between py-0.5">
-                  {/* Official Golden Security Seal Watermark centered behind particulars with reduced opacity */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
-                    <WatermarkEmblem
-                      className="w-[124px] h-[124px]"
-                      style={{ opacity: nidData.watermarkOpacity ?? 0.12 }}
-                    />
-                  </div>
+              {/* Golden watermark behind the particulars (official position/size) */}
+              <div className="absolute left-[79px] top-[68px] w-[261px] h-[144px] pointer-events-none select-none">
+                <WatermarkEmblem
+                  className="w-full h-full"
+                  style={{ opacity: nidData.watermarkOpacity ?? 0.5 }}
+                />
+              </div>
 
-                  <div className="relative z-10 flex flex-col justify-between h-full space-y-1">
-                    <div className="flex items-center">
-                      <span className="w-[44px] shrink-0 font-nikosh font-normal text-black text-[9.5px]">নাম:</span>
-                      <span className="font-nikosh font-bold text-black text-[11px] leading-tight">
-                        {t(nidData.nameBangla || 'মোঃ তাওহীদুল ইসলাম নাহিদ')}
-                      </span>
-                    </div>
+              {/* Particulars — label and value x-positions measured per row */}
+              <div className="absolute left-[86px] top-[74px] font-nikosh text-[17.5px] leading-none text-black">নাম:</div>
+              <div className="absolute left-[129px] top-[74px] font-nikosh font-bold text-[17.5px] leading-none text-black whitespace-nowrap">
+                {t(nidData.nameBangla || 'মোঃ তাওহীদুল ইসলাম নাহিদ')}
+              </div>
 
-                    <div className="flex items-center">
-                      <span className="w-[44px] shrink-0 font-nid-english font-normal text-black text-[9.5px]">Name:</span>
-                      <span className="font-nid-english font-bold text-black uppercase text-[9.5px] tracking-wide leading-tight">
-                        {nidData.nameEnglish || 'MD TAWHIDUL ISLAM NAHID'}
-                      </span>
-                    </div>
+              <div className="absolute left-[86px] top-[105px] font-nid-english text-[11.5px] leading-none text-black">Name:</div>
+              <div className="absolute left-[129px] top-[105px] font-nid-english font-bold text-[13.5px] leading-none text-black whitespace-nowrap">
+                {nidData.nameEnglish || 'MD TAWHIDUL ISLAM NAHID'}
+              </div>
 
-                    <div className="flex items-center">
-                      <span className="w-[44px] shrink-0 font-nikosh font-normal text-black text-[9.5px]">পিতা:</span>
-                      <span className="font-nikosh font-bold text-black text-[10px] leading-tight">
-                        {t(nidData.fatherName || 'মোঃ নুরুল মুত্তাকিন')}
-                      </span>
-                    </div>
+              <div className="absolute left-[86px] top-[124px] font-nikosh text-[15px] leading-none text-black">পিতা:</div>
+              <div className="absolute left-[129px] top-[124px] font-nikosh font-semibold text-[15px] leading-none text-black whitespace-nowrap">
+                {t(nidData.fatherName || 'মোঃ নুরুল মুত্তাকিন')}
+              </div>
 
-                    <div className="flex items-center">
-                      <span className="w-[44px] shrink-0 font-nikosh font-normal text-black text-[9.5px]">মাতা:</span>
-                      <span className="font-nikosh font-bold text-black text-[10px] leading-tight">
-                        {t(nidData.motherName || 'রেশমা আক্তার')}
-                      </span>
-                    </div>
+              <div className="absolute left-[86px] top-[147px] font-nikosh text-[15px] leading-none text-black">মাতা:</div>
+              <div className="absolute left-[129px] top-[147px] font-nikosh font-semibold text-[15px] leading-none text-black whitespace-nowrap">
+                {t(nidData.motherName || 'রেশমা আক্তার')}
+              </div>
 
-                    <div className="flex items-center">
-                      <span className="w-[74px] shrink-0 font-nid-english font-normal text-black text-[9.5px]">Date of Birth:</span>
-                      <span className="font-nid-english font-bold text-[#dc2626] text-[10px] leading-tight">
-                        {nidData.dob || '12 Sep 2006'}
-                      </span>
-                    </div>
+              <div className="absolute left-[85px] top-[171px] font-nid-english text-[12.5px] leading-none text-black">Date of Birth:</div>
+              <div className="absolute left-[163px] top-[171px] font-nid-english text-[12.5px] leading-none text-[#ff0000] whitespace-nowrap">
+                {nidData.dob || '12 Sep 2006'}
+              </div>
 
-                    <div className="flex items-center">
-                      <span className="w-[44px] shrink-0 font-nid-english font-normal text-black text-[9.5px]">ID NO:</span>
-                      <span className="font-nid-mono font-bold text-[#dc2626] text-[11px] tracking-wider leading-tight">
-                        {nidData.nidNumber || '1533151575'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <div className="absolute left-[85px] top-[190px] font-nid-english text-[12.5px] leading-none text-black">ID NO:</div>
+              <div className="absolute left-[127px] top-[190px] font-nid-english font-bold text-[12.5px] leading-none text-[#ff0000] whitespace-nowrap">
+                {nidData.nidNumber || '1533151575'}
               </div>
             </div>
 
             {/* CARD 2: BACK SIDE */}
-            <div className="w-[342px] h-[218px] border-[1.5px] border-black bg-white flex flex-col justify-between shrink-0 shadow-sm relative overflow-hidden">
+            <div className="w-[342px] h-[217px] border-[1.5px] border-black bg-white flex flex-col justify-between shrink-0 shadow-sm relative overflow-hidden">
               <div className="flex flex-col justify-between h-full font-nikosh">
                 {/* Section 1: Property Notice */}
                 <div className="px-2 py-1 text-left text-[7.5px] leading-tight text-black border-b border-black font-normal">

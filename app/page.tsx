@@ -1166,12 +1166,12 @@ export default function SinglePagePdfMaker() {
                       min="0.04"
                       max="0.35"
                       step="0.01"
-                      value={nidData.watermarkOpacity ?? 0.12}
+                      value={nidData.watermarkOpacity ?? 0.5}
                       onChange={(e) => saveNidData({ ...nidData, watermarkOpacity: parseFloat(e.target.value) })}
                       className="w-28 accent-amber-500 cursor-pointer"
                     />
                     <span className="text-amber-400 font-mono font-bold text-xs w-10 text-right">
-                      {Math.round((nidData.watermarkOpacity ?? 0.12) * 100)}%
+                      {Math.round((nidData.watermarkOpacity ?? 0.5) * 100)}%
                     </span>
                   </div>
                 </div>

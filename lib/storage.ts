@@ -110,7 +110,13 @@ export function loadPersistedState(): PersistedState {
   if (form) state.formData = cleanLegacyCorrections(form);
 
   const nid = readJson<NidDataState>(STORAGE_KEYS.nid);
-  if (nid) state.nidData = nid;
+  if (nid) {
+    // 0.12 was the shipped default watermark opacity until 2026-10-21; the
+    // official card's watermark is much stronger (~0.5), so migrate the old
+    // default value once. A value the user picked deliberately is kept.
+    if (nid.watermarkOpacity === 0.12) nid.watermarkOpacity = 0.5;
+    state.nidData = nid;
+  }
 
   const proff = readJson<ProffDataState>(STORAGE_KEYS.proff);
   if (proff) state.proffData = proff;
