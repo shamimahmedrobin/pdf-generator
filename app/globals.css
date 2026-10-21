@@ -55,6 +55,10 @@
   #pdf-render-area * {
     visibility: visible;
   }
+  .preview-scale-wrap {
+    transform: none !important;
+    position: static !important;
+  }
   #pdf-render-area {
     position: fixed;
     left: 0;

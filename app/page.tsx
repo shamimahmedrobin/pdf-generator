@@ -94,10 +94,16 @@ export default function SinglePagePdfMaker() {
     }
   }, []);
 
-  // Set initial scale on mount and update on window resize
+  // Set initial scale on mount and refit when the window WIDTH changes
+  // (height-only resizes — e.g. the mobile URL bar hiding on scroll — must
+  // not reset a zoom the user chose manually)
+  const lastFitWidthRef = useRef(0);
   useEffect(() => {
     fitToScreen();
+    lastFitWidthRef.current = window.innerWidth;
     const handleResize = () => {
+      if (Math.abs(window.innerWidth - lastFitWidthRef.current) < 24) return;
+      lastFitWidthRef.current = window.innerWidth;
       fitToScreen();
     };
     window.addEventListener('resize', handleResize);
@@ -305,7 +311,7 @@ export default function SinglePagePdfMaker() {
               </span>
               <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/25">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {view === 'template' ? 'Template (টেমপ্লেট ক্লোন)' : activeOption === 'Form' ? 'Form (আবেদন)' : activeOption === 'Nid' ? 'NiD (আইডি কার্ড)' : 'Proff (প্রত্যয়ন)'}
+                {view === 'template' ? 'Template (টেমপ্লেট ক্লোন)' : activeOption === 'Form' ? 'Form (আবেদন)' : activeOption === 'Nid' ? 'NID (আইডি কার্ড)' : 'Proff (প্রত্যয়ন)'}
               </span>
             </div>
           </div>
@@ -337,16 +343,16 @@ export default function SinglePagePdfMaker() {
                   ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-400 shadow-lg shadow-indigo-500/25 ring-2 ring-indigo-500/30'
                   : 'text-slate-200 bg-slate-900 border-slate-700/80 hover:bg-slate-800 hover:border-indigo-500/50 hover:text-white'
               }`}
-              title="মেনু খুলুন (Form, NiD, Proff)"
+              title="মেনু খুলুন (Form, NID, Proff)"
               aria-label="Menu"
             >
               <div className={`p-1 rounded-md transition-colors ${isMenuOpen ? 'bg-white/20 text-white' : 'bg-indigo-500/10 text-indigo-400'}`}>
                 <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </div>
-              <span className="font-bold tracking-wide">Menu</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700">
+              <span className="font-bold tracking-wide hidden min-[420px]:inline">Menu</span>
+              <span className="hidden min-[420px]:inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {activeOption === 'Nid' ? 'NiD' : activeOption}
+                {activeOption === 'Nid' ? 'NID' : activeOption}
               </span>
               <ChevronDown
                 className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
@@ -414,7 +420,7 @@ export default function SinglePagePdfMaker() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      আপনার পছন্দের অপশনটি নির্বাচন করুন: Form, NiD অথবা Proff
+                      আপনার পছন্দের অপশনটি নির্বাচন করুন: Form, NID অথবা Proff
                     </p>
                   </div>
                 </div>
@@ -444,7 +450,7 @@ export default function SinglePagePdfMaker() {
                   className={`group relative p-4 sm:p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                     activeOption === 'Form'
                       ? 'bg-gradient-to-br from-indigo-950/70 via-slate-900/90 to-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-950/60'
-                      : 'bg-slate-900/70 border-slate-800/90 hover:border-indigo-500/60 hover:bg-slate-850 hover:shadow-md'
+                      : 'bg-slate-900/70 border-slate-800/90 hover:border-indigo-500/60 hover:bg-slate-800 hover:shadow-md'
                   }`}
                 >
                   <div>
@@ -493,13 +499,13 @@ export default function SinglePagePdfMaker() {
                   onClick={() => {
                     setActiveOption('Nid');
                     setIsMenuOpen(false);
-                    setStatusMessage('NiD (জাতীয় পরিচয়পত্র) অপশন নির্বাচন করা হয়েছে');
+                    setStatusMessage('NID (জাতীয় পরিচয়পত্র) অপশন নির্বাচন করা হয়েছে');
                     setTimeout(() => setStatusMessage(''), 2500);
                   }}
                   className={`group relative p-4 sm:p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                     activeOption === 'Nid'
                       ? 'bg-gradient-to-br from-emerald-950/70 via-slate-900/90 to-emerald-950/40 border-emerald-500 ring-2 ring-emerald-500/30 shadow-lg shadow-emerald-950/60'
-                      : 'bg-slate-900/70 border-slate-800/90 hover:border-emerald-500/60 hover:bg-slate-850 hover:shadow-md'
+                      : 'bg-slate-900/70 border-slate-800/90 hover:border-emerald-500/60 hover:bg-slate-800 hover:shadow-md'
                   }`}
                 >
                   <div>
@@ -521,7 +527,7 @@ export default function SinglePagePdfMaker() {
                     <div className="mt-3.5">
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg font-bold text-white group-hover:text-emerald-300 transition-colors">
-                          NiD
+                          NID
                         </h3>
                         <span className="text-xs text-emerald-400/90 font-mono">(স্মার্ট/ল্যামিনেটিং)</span>
                       </div>
@@ -554,7 +560,7 @@ export default function SinglePagePdfMaker() {
                   className={`group relative p-4 sm:p-5 rounded-2xl border text-left flex flex-col justify-between transition-all duration-200 cursor-pointer ${
                     activeOption === 'Proff'
                       ? 'bg-gradient-to-br from-amber-950/70 via-slate-900/90 to-amber-950/40 border-amber-500 ring-2 ring-amber-500/30 shadow-lg shadow-amber-950/60'
-                      : 'bg-slate-900/70 border-slate-800/90 hover:border-amber-500/60 hover:bg-slate-850 hover:shadow-md'
+                      : 'bg-slate-900/70 border-slate-800/90 hover:border-amber-500/60 hover:bg-slate-800 hover:shadow-md'
                   }`}
                 >
                   <div>
@@ -606,7 +612,7 @@ export default function SinglePagePdfMaker() {
                     সহজ সিলেকশন:
                   </span>
                   <span className="text-slate-300">
-                    বর্তমান মোড: <strong className="text-emerald-400 font-bold">{activeOption === 'Nid' ? 'NiD' : activeOption}</strong>
+                    বর্তমান মোড: <strong className="text-emerald-400 font-bold">{activeOption === 'Nid' ? 'NID' : activeOption}</strong>
                   </span>
                 </div>
 
@@ -663,7 +669,7 @@ export default function SinglePagePdfMaker() {
                       </thead>
                       <tbody className="divide-y divide-slate-800/60">
                         {generatedDocs.map((item) => (
-                          <tr key={item.id} className="hover:bg-slate-850">
+                          <tr key={item.id} className="hover:bg-slate-800">
                             <td className="py-2 px-3 font-semibold text-white">
                               <div className="truncate max-w-[180px]">{item.title}</div>
                               <span className="text-[10px] text-slate-500 font-mono">{item.docNumber}</span>
@@ -741,7 +747,7 @@ export default function SinglePagePdfMaker() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-2.5 py-1 text-xs text-slate-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-850 rounded-lg border border-slate-800 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-2.5 py-1 text-xs text-slate-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 rounded-lg border border-slate-800 flex items-center gap-1.5 transition-colors cursor-pointer"
                 title="ডিফল্ট তথ্যে ফিরে যান"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -1389,8 +1395,8 @@ export default function SinglePagePdfMaker() {
                   ) : (
                     <>
                       <Download className="w-4 h-4 shrink-0" />
-                      <span className="hidden xs:inline">পিডিএফ জেনারেট ও ডাউনলোড</span>
-                      <span className="xs:hidden">ডাউনলোড</span>
+                      <span className="hidden sm:inline">পিডিএফ জেনারেট ও ডাউনলোড</span>
+                      <span className="sm:hidden">ডাউনলোড</span>
                     </>
                   )}
                 </button>
@@ -1400,7 +1406,7 @@ export default function SinglePagePdfMaker() {
             {/* A4 Canvas Outer Container: dynamically responsive & centered */}
             <div
               ref={previewOuterContainerRef}
-              className="bg-slate-950/90 border border-slate-800 rounded-xl p-3 sm:p-6 overflow-x-auto min-h-[480px] sm:min-h-[750px] flex justify-center items-start shadow-inner"
+              className="bg-slate-950/90 border border-slate-800 rounded-xl p-3 sm:p-6 overflow-x-auto min-h-[480px] sm:min-h-[750px] flex items-start shadow-inner"
             >
               {/* Scaled wrapper box: dynamically sized so no invisible horizontal overflow occurs */}
               <div
@@ -1412,6 +1418,7 @@ export default function SinglePagePdfMaker() {
                 className="mx-auto shrink-0 transition-all duration-150"
               >
                 <div
+                  className="preview-scale-wrap"
                   style={{
                     transform: `scale(${scale})`,
                     transformOrigin: 'top left',
@@ -1448,7 +1455,7 @@ export default function SinglePagePdfMaker() {
             className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeTabMobile === 'form'
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400'
-                : 'text-slate-300 hover:text-white hover:bg-slate-850'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -1464,7 +1471,7 @@ export default function SinglePagePdfMaker() {
             className={`px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
               activeTabMobile === 'preview'
                 ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400'
-                : 'text-slate-300 hover:text-white hover:bg-slate-850'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -1491,7 +1498,7 @@ export default function SinglePagePdfMaker() {
       {/* ================= FOOTER ================= */}
       <footer className="border-t border-slate-800/80 bg-[#0A0D14] py-4 sm:py-5 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
-          <p>সহজPDF মেকার · Form, Nid ও Proff সিঙ্গেল পেজ স্টুডিও</p>
+          <p>সহজPDF মেকার · Form, NID ও Proff সিঙ্গেল পেজ স্টুডিও</p>
           <div className="flex items-center gap-3 text-slate-400 text-[11px]">
             <span>১০০% রেসপনসিভ</span>
             <span>·</span>

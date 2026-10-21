@@ -204,6 +204,27 @@ export default function TemplateMakerView() {
     }
   };
 
+  // Re-render the page when the viewer width really changes (rotate/resize),
+  // otherwise the rendered page keeps its old width and can overflow.
+  const [renderTick, setRenderTick] = useState(0);
+  useEffect(() => {
+    if (!pdfDoc) return;
+    let lastW = viewerRef.current?.clientWidth || 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onResize = () => {
+      const w = viewerRef.current?.clientWidth || 0;
+      if (Math.abs(w - lastW) < 8) return;
+      lastW = w;
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => setRenderTick((t) => t + 1), 200);
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      if (timer) clearTimeout(timer);
+    };
+  }, [pdfDoc]);
+
   // ---------- page rendering ----------
   useEffect(() => {
     if (!pdfDoc) return;
@@ -224,7 +245,7 @@ export default function TemplateMakerView() {
     return () => {
       cancelled = true;
     };
-  }, [pdfDoc, pageIdx, activeId]);
+  }, [pdfDoc, pageIdx, activeId, renderTick]);
 
   // ---------- field drawing / moving ----------
   const toPt = (e: React.PointerEvent) => {
@@ -430,7 +451,15 @@ export default function TemplateMakerView() {
       )}
 
       {status && (
-        <div className="mb-4 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700/80 text-xs sm:text-sm text-slate-200">
+        <div
+          className={`mb-4 px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm ${
+            status.includes('⚠️')
+              ? 'bg-rose-950/80 border-rose-800 text-rose-200'
+              : status.includes('✓')
+                ? 'bg-emerald-950/80 border-emerald-700 text-emerald-200'
+                : 'bg-slate-900 border-slate-700/80 text-slate-200'
+          }`}
+        >
           {status}
         </div>
       )}
