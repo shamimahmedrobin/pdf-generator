@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import {Hind_Siliguri, JetBrains_Mono, Plus_Jakarta_Sans} from 'next/font/google';
 import './globals.css'; // Global styles
+import {BASE_PATH} from '@/lib/base-path';
 
 const hindSiliguri = Hind_Siliguri({
   subsets: ['bengali', 'latin'],
@@ -52,6 +53,9 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="bn">
+      <head>
+        <link rel="stylesheet" href={`${BASE_PATH}/fonts/fonts.css`} />
+      </head>
       <body
         className={`${hindSiliguri.variable} ${jakartaSans.variable} ${jetBrainsMono.variable} antialiased bg-[#0B0F17] text-slate-100 font-sans min-h-screen selection:bg-indigo-500/30 selection:text-indigo-200`}
         suppressHydrationWarning
