@@ -34,23 +34,11 @@ export const GoldenWatermarkEmblem: React.FC<{
 // Default Watermark alias
 export const WatermarkEmblem = GoldenWatermarkEmblem;
 
-// Authority Signature with Golden Official Stamp Behind Cursive Stroke
+// Authority Signature (cursive stroke)
 export const IssuingAuthoritySignature: React.FC = () => {
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-20 h-8 flex items-center justify-center">
-        {/* Faint Golden Round Stamp behind signature */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
-          <svg viewBox="0 0 44 44" className="w-9 h-9" fill="none">
-            <circle cx="22" cy="22" r="20" stroke="#D4AF37" strokeWidth="1.2" />
-            <circle cx="22" cy="22" r="17.5" stroke="#D4AF37" strokeWidth="0.6" strokeDasharray="2 1.5" />
-            <circle cx="22" cy="22" r="14" stroke="#D4AF37" strokeWidth="0.5" />
-            {/* Center mini lily icon */}
-            <path d="M22 17 C21 21, 21 24, 22 26 C23 24, 23 21, 22 17 Z" fill="#D4AF37" />
-            <path d="M19 23 C17 25, 20 26, 22 27 C24 26, 27 25, 25 23" stroke="#D4AF37" strokeWidth="0.6" />
-          </svg>
-        </div>
-
+      <div className="w-20 h-8 flex items-center justify-center">
         {/* Cursive Signature Stroke in Black */}
         <svg viewBox="0 0 84 28" className="w-16 h-7 text-black relative z-10" fill="none" stroke="currentColor">
           <path
@@ -264,6 +252,46 @@ export const Pdf417NidBarcode: React.FC<{ className?: string }> = ({ className =
         <rect x="335" y="0" width="1.5" height="38" fill="black" />
         <rect x="338" y="0" width="2" height="38" fill="black" />
       </svg>
+    </div>
+  );
+};
+
+// Real PDF417 barcode encoded from the user-supplied code (bwip-js, loaded
+// on demand). Falls back to the decorative pattern if the payload cannot
+// be encoded.
+export const RealPdf417Barcode: React.FC<{ text: string; className?: string }> = ({
+  text,
+  className = 'w-full h-8',
+}) => {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const [failed, setFailed] = React.useState(false);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const bwipjs = (await import('bwip-js')).default;
+        if (cancelled || !canvasRef.current) return;
+        bwipjs.toCanvas(canvasRef.current, {
+          bcid: 'pdf417',
+          text,
+          scale: 3,
+          padding: 0,
+        });
+        if (!cancelled) setFailed(false);
+      } catch {
+        if (!cancelled) setFailed(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [text]);
+
+  if (failed) return <Pdf417NidBarcode className={className} />;
+  return (
+    <div className={`flex items-center justify-center bg-white overflow-hidden ${className}`}>
+      <canvas ref={canvasRef} className="w-full h-full" style={{ imageRendering: 'pixelated' }} />
     </div>
   );
 };

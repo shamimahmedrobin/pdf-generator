@@ -1106,6 +1106,18 @@ export default function SinglePagePdfMaker() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-slate-400 font-medium mb-1">PDF417 বারকোডের কোড (ব্যাক সাইড)</label>
+                  <textarea
+                    rows={2}
+                    value={nidData.barcodeData || ''}
+                    onChange={(e) => saveNidData({ ...nidData, barcodeData: e.target.value })}
+                    placeholder="এখানে কোড বসালে কার্ডের পেছনে আসল PDF417 বারকোড তৈরি হবে"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white leading-relaxed font-mono text-xs"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">ঘরটা খালি রাখলে পেছনে আগের নকশার বারকোডটাই দেখাবে।</p>
+                </div>
+
                 {/* Photo & Signature Upload */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>

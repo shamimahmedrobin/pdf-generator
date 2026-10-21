@@ -37,6 +37,7 @@ export const DEFAULT_NID_DATA: NidDataState = {
   dob: '12 Sep 2006',
   nidNumber: '1533151575',
   pinNumber: '19948732934032',
+  barcodeData: '',
   bloodGroup: 'A+',
   birthPlace: 'সুনামগঞ্জ',
   issueDate: '০৪/১০/২০২৩',

@@ -53,6 +53,8 @@ export interface NidDataState {
   dob: string;
   nidNumber: string;
   pinNumber?: string;
+  /** Raw payload for the back-side PDF417 barcode; empty = decorative pattern. */
+  barcodeData?: string;
   bloodGroup: string;
   birthPlace: string;
   issueDate: string;

@@ -8,7 +8,8 @@ import {
   BangladeshEmblem,
   WatermarkEmblem,
   IssuingAuthoritySignature,
-  Pdf417NidBarcode
+  Pdf417NidBarcode,
+  RealPdf417Barcode
 } from './NidCardAssets';
 
 interface SinglePagePaperPreviewProps {
@@ -525,9 +526,13 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                   </div>
                 </div>
 
-                {/* Section 5: PDF417 2D Barcode */}
+                {/* Section 5: PDF417 2D Barcode (real one when a code is given) */}
                 <div className="px-1.5 pb-1.5 pt-0.5">
-                  <Pdf417NidBarcode className="w-full h-[34px]" />
+                  {nidData.barcodeData?.trim() ? (
+                    <RealPdf417Barcode text={nidData.barcodeData.trim()} className="w-full h-[34px]" />
+                  ) : (
+                    <Pdf417NidBarcode className="w-full h-[34px]" />
+                  )}
                 </div>
               </div>
             </div>
