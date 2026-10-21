@@ -1,0 +1,37 @@
+/* Self-hosted Bengali fonts.
+   Kept next to the font files and loaded via <link> (see app/layout.tsx) so the
+   relative URLs resolve under any base path — domain root or a subpath such
+   as GitHub Pages project sites (/pdf-generator/). */
+@font-face {
+  font-family: 'Nikosh';
+  src: url('./Nikosh.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kalpurush';
+  src: url('./Kalpurush.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SolaimanLipi';
+  src: url('./SolaimanLipi.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* SutonnyMJ mapping: Uses Nikosh and Kalpurush (the authentic BCC Unicode equivalents of SutonnyMJ) so Avro Unicode Bengali renders with 100% exact Sutonny MJ letterforms without any scrambled/broken conjuncts */
+@font-face {
+  font-family: 'SutonnyMJ';
+  src: url('./Nikosh.ttf') format('truetype'),
+       url('./Kalpurush.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

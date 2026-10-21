@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ActiveOption, FormDataState, NidDataState, ProffDataState } from '@/types/single-page-types';
-import { Shield, QrCode, CheckCircle2, User, Award, Scissors } from 'lucide-react';
+import { QrCode, CheckCircle2, User, Award } from 'lucide-react';
 import { toBanglaNumber, cleanSubjectPrefix } from '@/lib/utils';
 import {
   BangladeshEmblem,

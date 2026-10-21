@@ -54,20 +54,11 @@ export async function generateAndDownloadPdf({
 
     onProgress?.(25, 'লাইব্রেরি লোড করা হচ্ছে...');
 
-    // Dynamically import libraries
-    const html2canvasModule = await import('html2canvas');
-    const html2canvas =
-      (html2canvasModule as any).default || html2canvasModule;
-
-    const jspdfModule = await import('jspdf');
-    const JsPdfConstructor =
-      (jspdfModule as any).jsPDF ||
-      ((jspdfModule as any).default && (jspdfModule as any).default.jsPDF) ||
-      (typeof (jspdfModule as any).default === 'function' ? (jspdfModule as any).default : null);
-
-    if (!JsPdfConstructor) {
-      throw new Error('jsPDF library failed to initialize.');
-    }
+    // Dynamically import libraries.
+    // html2canvas-pro is the maintained fork of html2canvas with support for
+    // the modern CSS color functions (oklch/lab) that Tailwind v4 emits.
+    const {default: html2canvas} = await import('html2canvas-pro');
+    const {jsPDF: JsPdfConstructor} = await import('jspdf');
 
     onProgress?.(45, 'লেআউট অপ্টিমাইজ ও রেন্ডার হচ্ছে...');
 

@@ -1,38 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-@font-face {
-  font-family: 'Nikosh';
-  src: url('/fonts/Nikosh.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Kalpurush';
-  src: url('/fonts/Kalpurush.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SolaimanLipi';
-  src: url('/fonts/SolaimanLipi.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* SutonnyMJ mapping: Uses Nikosh and Kalpurush (the authentic BCC Unicode equivalents of SutonnyMJ) so Avro Unicode Bengali renders with 100% exact Sutonny MJ letterforms without any scrambled/broken conjuncts */
-@font-face {
-  font-family: 'SutonnyMJ';
-  src: url('/fonts/Nikosh.ttf') format('truetype'),
-       url('/fonts/Kalpurush.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+@theme inline {
+  --font-sans: var(--font-hind), 'Hind Siliguri', sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', monospace;
 }
 
 .font-nikosh {
@@ -52,15 +22,15 @@
 }
 
 .font-hind {
-  font-family: 'Hind Siliguri', sans-serif !important;
+  font-family: var(--font-hind), 'Hind Siliguri', sans-serif !important;
 }
 
 .font-nid-english {
-  font-family: 'Plus Jakarta Sans', Arial, Helvetica, sans-serif !important;
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', Arial, Helvetica, sans-serif !important;
 }
 
 .font-nid-mono {
-  font-family: 'JetBrains Mono', 'Courier New', Courier, monospace !important;
+  font-family: var(--font-jetbrains), 'JetBrains Mono', 'Courier New', Courier, monospace !important;
 }
 
 #pdf-render-area {

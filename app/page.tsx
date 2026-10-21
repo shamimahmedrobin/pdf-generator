@@ -2,8 +2,10 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ActiveOption, FormDataState, NidDataState, ProffDataState, GeneratedDocItem } from '@/types/single-page-types';
-import { DEFAULT_FORM_DATA, DEFAULT_NID_DATA, DEFAULT_PROFF_DATA } from '@/lib/single-page-demos';
+import { DEFAULT_FORM_DATA, DEFAULT_GENERATED_DOCS, DEFAULT_NID_DATA, DEFAULT_PROFF_DATA } from '@/lib/single-page-demos';
+import { loadPersistedState, STORAGE_KEYS, writeLocal } from '@/lib/storage';
 import { SinglePagePaperPreview } from '@/components/SinglePagePaperPreview';
+import TemplateMakerView from '@/components/TemplateMakerView';
 import { generateAndDownloadPdf, triggerBrowserPrint } from '@/lib/pdf-generator';
 import { toBanglaNumber } from '@/lib/utils';
 import {
@@ -26,14 +28,15 @@ import {
   Menu,
   ChevronDown,
   Sparkles,
-  Layers,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  LayoutTemplate
 } from 'lucide-react';
 
 export default function SinglePagePdfMaker() {
   // Three primary options: Form, Nid, Proff
   const [activeOption, setActiveOption] = useState<ActiveOption>('Form');
+  const [view, setView] = useState<'maker' | 'template'>('maker');
 
   // Form states for the 3 options
   const [formData, setFormData] = useState<FormDataState>(DEFAULT_FORM_DATA);
@@ -41,32 +44,7 @@ export default function SinglePagePdfMaker() {
   const [proffData, setProffData] = useState<ProffDataState>(DEFAULT_PROFF_DATA);
 
   // Dashboard Generated Documents History
-  const [generatedDocs, setGeneratedDocs] = useState<GeneratedDocItem[]>([
-    {
-      id: 'doc-1',
-      type: 'Form',
-      title: 'নাগরিক সেবা আবেদন ফরম',
-      docNumber: 'APP-২০২৬-৮৮৯',
-      createdAt: '০৭ অক্টোবর ২০২৬',
-      downloadCount: 2
-    },
-    {
-      id: 'doc-2',
-      type: 'Nid',
-      title: 'জাতীয় পরিচয়পত্র (NID) কার্ড প্রিন্ট',
-      docNumber: '645 289 1045',
-      createdAt: '০৭ অক্টোবর ২০২৬',
-      downloadCount: 4
-    },
-    {
-      id: 'doc-3',
-      type: 'Proff',
-      title: 'স্থায়ী নাগরিকত্ব ও চারিত্রিক প্রত্যয়ন পত্র',
-      docNumber: 'ডিএনসিসি/প্রত্যয়ন/২০২৬/৮৪২',
-      createdAt: '০৬ অক্টোবর ২০২৬',
-      downloadCount: 1
-    }
-  ]);
+  const [generatedDocs, setGeneratedDocs] = useState<GeneratedDocItem[]>(DEFAULT_GENERATED_DOCS);
 
   // Responsive UI state
   const [scale, setScale] = useState<number>(0.85);
@@ -94,50 +72,12 @@ export default function SinglePagePdfMaker() {
   // Safe client-side hydration from localStorage after mount
   useEffect(() => {
     const timer = setTimeout(() => {
-      try {
-        const savedForm = localStorage.getItem('pdf_form_data');
-        if (savedForm) {
-          const parsed = JSON.parse(savedForm);
-          // Clean up legacy 7-row placeholder dummies if all fields are empty
-          if (Array.isArray(parsed?.corrections)) {
-            const filtered = parsed.corrections
-              .filter((r: any) =>
-                (r.subject && r.subject.trim() !== '') ||
-                (r.currentData && r.currentData.trim() !== '') ||
-                (r.correctedData && r.correctedData.trim() !== '') ||
-                (r.attachment && r.attachment.trim() !== '') ||
-                r.id === '1'
-              )
-              .map((r: any) => {
-                // If only attachment or empty correction data, strip old solitary auto-prefix like '(০২)'
-                const hasCorrection = Boolean(
-                  (r.currentData && r.currentData.trim() !== '') ||
-                  (r.correctedData && r.correctedData.trim() !== '')
-                );
-                if (!hasCorrection && r.subject && r.subject.match(/^\(০[০-৯]\)\s*$/)) {
-                  return { ...r, subject: '' };
-                }
-                return r;
-              });
-            parsed.corrections = filtered.length > 0 ? filtered : parsed.corrections;
-          }
-          setFormData(parsed);
-        }
-
-        const savedNid = localStorage.getItem('pdf_nid_data');
-        if (savedNid) setNidData(JSON.parse(savedNid));
-
-        const savedProff = localStorage.getItem('pdf_proff_data');
-        if (savedProff) setProffData(JSON.parse(savedProff));
-
-        const savedHistory = localStorage.getItem('pdf_generated_history');
-        if (savedHistory) setGeneratedDocs(JSON.parse(savedHistory));
-
-        const savedFont = localStorage.getItem('pdf_selected_font');
-        if (savedFont && ['sutonny', 'kalpurush', 'solaiman', 'hind'].includes(savedFont)) {
-          setSelectedFont(savedFont as 'sutonny' | 'kalpurush' | 'solaiman' | 'hind');
-        }
-      } catch {}
+      const saved = loadPersistedState();
+      if (saved.formData) setFormData(saved.formData);
+      if (saved.nidData) setNidData(saved.nidData);
+      if (saved.proffData) setProffData(saved.proffData);
+      if (saved.generatedDocs) setGeneratedDocs(saved.generatedDocs);
+      if (saved.selectedFont) setSelectedFont(saved.selectedFont);
     }, 0);
 
     return () => clearTimeout(timer);
@@ -174,32 +114,23 @@ export default function SinglePagePdfMaker() {
   // Sync state to localStorage
   const saveFormData = (data: FormDataState) => {
     setFormData(data);
-    try {
-      localStorage.setItem('pdf_form_data', JSON.stringify(data));
-    } catch {}
+    writeLocal(STORAGE_KEYS.form, data);
   };
 
   const saveNidData = (data: NidDataState) => {
     setNidData(data);
-    try {
-      localStorage.setItem('pdf_nid_data', JSON.stringify(data));
-    } catch {}
+    writeLocal(STORAGE_KEYS.nid, data);
   };
 
   const saveProffData = (data: ProffDataState) => {
     setProffData(data);
-    try {
-      localStorage.setItem('pdf_proff_data', JSON.stringify(data));
-    } catch {}
+    writeLocal(STORAGE_KEYS.proff, data);
   };
 
   const saveHistory = (docs: GeneratedDocItem[]) => {
     setGeneratedDocs(docs);
-    try {
-      localStorage.setItem('pdf_generated_history', JSON.stringify(docs));
-    } catch {}
+    writeLocal(STORAGE_KEYS.history, docs);
   };
-
 
   // Photo upload for NID
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,6 +159,7 @@ export default function SinglePagePdfMaker() {
       reader.readAsDataURL(file);
     }
   };
+
 
   // Reset to default demo data
   const handleReset = () => {
@@ -373,16 +305,31 @@ export default function SinglePagePdfMaker() {
               </span>
               <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/25">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {activeOption === 'Form' && 'Form (আবেদন)'}
-                {activeOption === 'Nid' && 'NiD (আইডি কার্ড)'}
-                {activeOption === 'Proff' && 'Proff (প্রত্যয়ন)'}
+                {view === 'template' ? 'Template (টেমপ্লেট ক্লোন)' : activeOption === 'Form' ? 'Form (আবেদন)' : activeOption === 'Nid' ? 'NiD (আইডি কার্ড)' : 'Proff (প্রত্যয়ন)'}
               </span>
             </div>
           </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* View toggle: Maker / Template clone */}
+            <div className="inline-flex rounded-xl border border-slate-700/80 overflow-hidden">
+              <button
+                onClick={() => setView('maker')}
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold transition-colors ${view === 'maker' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+              >
+                মেকার
+              </button>
+              <button
+                onClick={() => setView('template')}
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold inline-flex items-center gap-1 transition-colors ${view === 'template' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+              >
+                <LayoutTemplate className="w-3.5 h-3.5" />
+                টেমপ্লেট
+              </button>
+            </div>
             {/* MENU BUTTON (Contains Form, NiD, Proff) */}
+            {view === 'maker' && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`relative inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl border transition-all duration-200 shadow-sm cursor-pointer ${
@@ -407,9 +354,15 @@ export default function SinglePagePdfMaker() {
                 }`}
               />
             </button>
+            )}
           </div>
         </div>
       </header>
+
+      {view === 'template' ? (
+        <TemplateMakerView />
+      ) : (
+        <>
 
       {/* ================= STATUS BANNER ================= */}
       {statusMessage && (
@@ -1147,6 +1100,42 @@ export default function SinglePagePdfMaker() {
                   </div>
                 </div>
 
+                {/* Photo & Signature Upload */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-400 font-medium mb-1">ছবি (Photo)</label>
+                    <div className="flex items-center gap-2.5">
+                      {nidData.photoUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={nidData.photoUrl} alt="NID" className="w-9 h-11 object-cover rounded border border-slate-700 shrink-0" />
+                      )}
+                      <label className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 text-center cursor-pointer hover:border-slate-500 transition-colors">
+                        {nidData.photoUrl ? 'ছবি বদলান' : 'ছবি আপলোড করুন'}
+                        <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+                      </label>
+                      {nidData.photoUrl && (
+                        <button type="button" onClick={() => saveNidData({ ...nidData, photoUrl: '' })} className="px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-lg text-rose-400 hover:border-rose-500/50 transition-colors">মুছুন</button>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 font-medium mb-1">স্বাক্ষর (Signature)</label>
+                    <div className="flex items-center gap-2.5">
+                      {nidData.signatureUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={nidData.signatureUrl} alt="Signature" className="h-9 w-16 object-contain bg-white rounded border border-slate-700 shrink-0" />
+                      )}
+                      <label className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-slate-300 text-center cursor-pointer hover:border-slate-500 transition-colors">
+                        {nidData.signatureUrl ? 'স্বাক্ষর বদলান' : 'স্বাক্ষর আপলোড করুন'}
+                        <input type="file" accept="image/*" onChange={handleSignatureUpload} className="hidden" />
+                      </label>
+                      {nidData.signatureUrl && (
+                        <button type="button" onClick={() => saveNidData({ ...nidData, signatureUrl: '' })} className="px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-lg text-rose-400 hover:border-rose-500/50 transition-colors">মুছুন</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Watermark Opacity Control */}
                 <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between">
                   <div>
@@ -1512,6 +1501,8 @@ export default function SinglePagePdfMaker() {
           </div>
         </div>
       </footer>
+        </>
+      )}
     </div>
   );
 }
