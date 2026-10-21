@@ -313,12 +313,27 @@ export default function TemplateMakerView() {
     });
   };
 
+  /** Effective value of a field: mirror fields reuse their source field's value. */
+  const fieldValue = (f: TemplateField): string => {
+    if (f.mirrorOf && active) {
+      const src = active.fields.find((x) => x.name === f.mirrorOf);
+      if (src) return values[src.id] ?? '';
+    }
+    return values[f.id] ?? '';
+  };
+
+  const resolvedValues = (): Record<string, string> => {
+    const out: Record<string, string> = {};
+    if (active) for (const f of active.fields) out[f.id] = fieldValue(f);
+    return out;
+  };
+
   const handleGenerate = async () => {
     if (!active || !pdfBytesRef.current) return;
     setBusy(true);
     setStatus('PDF তৈরি হচ্ছে...');
     try {
-      const blob = await generateFromTemplate(pdfBytesRef.current, active.fields, values);
+      const blob = await generateFromTemplate(pdfBytesRef.current, active.fields, resolvedValues());
       downloadBlob(blob, `${active.name}-filled.pdf`);
       setStatus('✓ PDF ডাউনলোড হয়েছে!');
     } catch (err) {
@@ -484,7 +499,7 @@ export default function TemplateMakerView() {
                   />
                   {/* field overlays */}
                   {pageFields.map((f) => {
-                    const val = values[f.id] ?? '';
+                    const val = fieldValue(f);
                     const fontClass = TEMPLATE_FONTS.find((t) => t.key === f.font)?.cssClass ?? '';
                     return (
                       <div
@@ -700,13 +715,28 @@ export default function TemplateMakerView() {
                             <span className="text-slate-600"> · পেজ {f.page + 1}</span>
                           )}
                         </label>
-                        <input
-                          value={values[f.id] ?? ''}
-                          onChange={(e) => setValue(f.id, e.target.value)}
-                          onFocus={() => setPageIdx(f.page)}
-                          className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"
-                          placeholder="এখানে লিখুন..."
-                        />
+                        {f.mirrorOf ? (
+                          <>
+                            <input
+                              value={fieldValue(f)}
+                              readOnly
+                              onFocus={() => setPageIdx(f.page)}
+                              className="w-full px-2.5 py-2 bg-slate-900/60 border border-slate-800 rounded-lg text-slate-400 text-sm"
+                              placeholder="—"
+                            />
+                            <p className="text-[11px] text-slate-500 mt-1">
+                              “{f.mirrorOf}” ঘর থেকে নিজে নিজে বসবে
+                            </p>
+                          </>
+                        ) : (
+                          <input
+                            value={values[f.id] ?? ''}
+                            onChange={(e) => setValue(f.id, e.target.value)}
+                            onFocus={() => setPageIdx(f.page)}
+                            className="w-full px-2.5 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"
+                            placeholder="এখানে লিখুন..."
+                          />
+                        )}
                       </div>
                     ))}
                 </div>

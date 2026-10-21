@@ -61,10 +61,35 @@ export function cleanLegacyCorrections(data: FormDataState): FormDataState {
       return r;
     });
 
-  return {
+  const cleaned: FormDataState = {
     ...data,
     corrections: filtered.length > 0 ? filtered : data.corrections,
   };
+
+  // The old demo seed pre-filled these lines, but on the official printed
+  // Form-2 they stay blank — clear them when a saved form still holds the
+  // exact seeded values (anything the user typed themselves is kept). The
+  // receipt serial is dropped too: with it empty, the receipt copy mirrors
+  // the form's serial number, as it should.
+  const LEGACY_DEMO_VALUES: Partial<FormDataState> = {
+    feeAmount: '৩৪৫/-',
+    feeReceiptNo: 'TR-9832410',
+    attachedDocsSummary: 'জন্ম নিবন্ধন সনদ ও জাতীয় পরিচয়পত্রের কপি',
+    applicantAddress: 'বাড়ি #১২, রোড #০৪, সেক্টর #১০, উত্তরা, ঢাকা',
+    applicantMobile: '০১৭১২-৩৪৫৬৭৮',
+    applicantEmail: 'rabiullah@example.com',
+    applicationDate: '০৭/১০/২০২৬',
+    deliveryDate: '১৫/১১/২০২৬',
+    receiptSerialNo: 'REC-2026-842',
+  };
+  for (const [key, legacy] of Object.entries(LEGACY_DEMO_VALUES)) {
+    const k = key as keyof FormDataState;
+    if (cleaned[k] === legacy) {
+      (cleaned as unknown as Record<string, unknown>)[k] = '';
+    }
+  }
+
+  return cleaned;
 }
 
 export interface PersistedState {

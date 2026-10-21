@@ -15,18 +15,18 @@ export const DEFAULT_FORM_DATA: FormDataState = {
       attachment: 'BIRTH_CERTIFICATE'
     }
   ],
-  feeAmount: '৩৪৫/-',
-  feeReceiptNo: 'TR-9832410',
-  attachedDocsSummary: 'জন্ম নিবন্ধন সনদ ও জাতীয় পরিচয়পত্রের কপি',
-  applicantAddress: 'বাড়ি #১২, রোড #০৪, সেক্টর #১০, উত্তরা, ঢাকা',
-  applicantMobile: '০১৭১২-৩৪৫৬৭৮',
-  applicantEmail: 'rabiullah@example.com',
+  feeAmount: '',
+  feeReceiptNo: '',
+  attachedDocsSummary: '',
+  applicantAddress: '',
+  applicantMobile: '',
+  applicantEmail: '',
   guardianAddress: '',
   guardianMobile: '',
   guardianEmail: '',
-  applicationDate: '০৭/১০/২০২৬',
-  deliveryDate: '১৫/১১/২০২৬',
-  receiptSerialNo: 'REC-2026-842'
+  applicationDate: '',
+  deliveryDate: '',
+  receiptSerialNo: ''
 };
 
 export const DEFAULT_NID_DATA: NidDataState = {

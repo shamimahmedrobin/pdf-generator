@@ -46,23 +46,23 @@ export const FORM2_PRESET: TemplatePreset = {
     ['বর্তমান তথ্য', 172, 311, 126, 14, 8],
     ['সংশোধিত তথ্য', 302, 311, 126, 14, 8],
     ['দলিলাদি / মন্তব্য', 432, 311, 111, 14, 10],
-    ['ফি এর পরিমাণ', 477, 453, 66, 15, 10],
-    ['ফি জমা দানের রশিদ', 199, 470, 220, 15, 10],
-    ['সংযুক্ত দলিলাদির বিবরণ', 235, 487, 308, 15, 10],
     ['অভিভাবকের নাম (স্বাক্ষর অংশ)', 73, 543, 168, 13, 10],
     ['অভিভাবকের ঠিকানা', 83, 558, 158, 13, 10],
     ['অভিভাবকের মোবাইল নম্বর', 108, 573, 133, 13, 10],
     ['অভিভাবকের ই-মেইল', 132, 588, 109, 13, 10],
     ['আবেদনকারীর নাম (স্বাক্ষর অংশ)', 393, 543, 150, 13, 10],
-    ['আবেদনকারীর ঠিকানা', 403, 558, 140, 13, 10],
-    ['আবেদনকারীর মোবাইল নম্বর', 428, 573, 115, 13, 10],
-    ['আবেদনকারীর ই-মেইল', 452, 588, 91, 13, 10],
     ['রশিদ: ক্রমিক নম্বর', 450, 652, 95, 15, 10],
     ['রশিদ: আবেদনকারীর নাম ও NID', 307, 671, 236, 15, 10],
     ['রশিদ: অভিভাবকের নাম ও NID', 307, 688, 236, 15, 10],
-    ['রশিদ: আবেদনের তারিখ', 307, 722, 160, 15, 10],
-    ['রশিদ: প্রদানের তারিখ', 307, 739, 160, 15, 10],
   ] as FieldSpec[]).map(spec),
 };
+
+// The receipt (অংশ-খ) serial is always the same as the form's serial number,
+// and the official printed form leaves the fee/receipt/attachment lines, the
+// applicant's contact lines and the receipt dates blank — so the preset has
+// no fields for them (they can still be added by hand in the field editor).
+FORM2_PRESET.fields = FORM2_PRESET.fields.map((f) =>
+  f.name === 'রশিদ: ক্রমিক নম্বর' ? {...f, mirrorOf: 'ক্রমিক নম্বর'} : f,
+);
 
 export const TEMPLATE_PRESETS: TemplatePreset[] = [FORM2_PRESET];

@@ -25,6 +25,8 @@ export interface TemplateField {
   color: string;
   /** Paint an opaque white patch behind the text (covers the old value) */
   cover: boolean;
+  /** Name of another field whose value this field reuses (e.g. the receipt copy of a serial number). Mirror fields get no input of their own. */
+  mirrorOf?: string;
 }
 
 export interface PdfTemplateMeta {
