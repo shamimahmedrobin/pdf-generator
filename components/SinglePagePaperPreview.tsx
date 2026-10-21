@@ -378,9 +378,9 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
                   Government of the People&apos;s Republic of Bangladesh
                 </div>
                 <div className="absolute top-[44px] left-0 right-0 flex items-baseline justify-center leading-none">
-                  <span className="font-nid-english text-[10.5px] text-[#ff0000]">National ID Card</span>
-                  <span className="mx-[3px] text-[14px] text-black">/</span>
-                  <span className="font-nikosh text-[14px] text-black">{t('জাতীয় পরিচয় পত্র')}</span>
+                  <span className="font-nid-english text-[10.5px] text-[#ff0000] shrink-0 whitespace-nowrap">National ID Card</span>
+                  <span className="mx-[3px] text-[14px] text-black shrink-0">/</span>
+                  <span className="font-nikosh text-[14px] text-black shrink-0 whitespace-nowrap">{t('জাতীয় পরিচয় পত্র')}</span>
                 </div>
               </div>
               <div className="absolute top-[67px] left-0 right-0 border-t-[1.5px] border-black" />
@@ -431,7 +431,7 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
               </div>
 
               <div className="absolute left-[86px] top-[105px] font-nid-english text-[11.5px] leading-none text-black">Name:</div>
-              <div className="absolute left-[129px] top-[105px] font-nid-english font-bold text-[13.5px] leading-none text-black whitespace-nowrap">
+              <div className="absolute left-[129px] top-[105px] font-nid-english font-bold text-[12.5px] leading-none text-black whitespace-nowrap">
                 {nidData.nameEnglish || 'MD TAWHIDUL ISLAM NAHID'}
               </div>
 
