@@ -371,10 +371,10 @@ export const SinglePagePaperPreview: React.FC<SinglePagePaperPreviewProps> = ({
               {/* Header: emblem + centered title block beside it */}
               <BangladeshEmblem className="absolute left-[6px] top-[10px] w-[39px] h-[39px]" />
               <div className="absolute left-[46px] right-[2px] top-0 h-[67px]">
-                <div className="absolute top-[6px] left-0 right-0 text-center font-nikosh font-bold text-[21px] leading-none text-black">
+                <div className="absolute top-[6px] left-0 right-0 text-center font-nikosh font-bold text-[21px] leading-none whitespace-nowrap text-black">
                   {t('গণপ্রজাতন্ত্রী বাংলাদেশ সরকার')}
                 </div>
-                <div className="absolute top-[30px] left-0 right-0 text-center font-nid-english text-[12px] leading-none text-[#007700]">
+                <div className="absolute top-[30px] left-0 right-0 text-center font-nid-english text-[11px] leading-none whitespace-nowrap text-[#007700]">
                   Government of the People&apos;s Republic of Bangladesh
                 </div>
                 <div className="absolute top-[44px] left-0 right-0 flex items-baseline justify-center leading-none">
