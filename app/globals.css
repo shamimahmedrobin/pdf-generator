@@ -5,40 +5,6 @@
   --font-mono: var(--font-jetbrains), 'JetBrains Mono', monospace;
 }
 
-@font-face {
-  font-family: 'Nikosh';
-  src: url('/fonts/Nikosh.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Kalpurush';
-  src: url('/fonts/Kalpurush.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'SolaimanLipi';
-  src: url('/fonts/SolaimanLipi.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* SutonnyMJ mapping: Uses Nikosh and Kalpurush (the authentic BCC Unicode equivalents of SutonnyMJ) so Avro Unicode Bengali renders with 100% exact Sutonny MJ letterforms without any scrambled/broken conjuncts */
-@font-face {
-  font-family: 'SutonnyMJ';
-  src: url('/fonts/Nikosh.ttf') format('truetype'),
-       url('/fonts/Kalpurush.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 .font-nikosh {
   font-family: 'Nikosh', 'Kalpurush', 'SolaimanLipi', sans-serif !important;
 }

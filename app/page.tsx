@@ -5,6 +5,7 @@ import { ActiveOption, FormDataState, NidDataState, ProffDataState, GeneratedDoc
 import { DEFAULT_FORM_DATA, DEFAULT_GENERATED_DOCS, DEFAULT_NID_DATA, DEFAULT_PROFF_DATA } from '@/lib/single-page-demos';
 import { loadPersistedState, STORAGE_KEYS, writeLocal } from '@/lib/storage';
 import { SinglePagePaperPreview } from '@/components/SinglePagePaperPreview';
+import TemplateMakerView from '@/components/TemplateMakerView';
 import { generateAndDownloadPdf, triggerBrowserPrint } from '@/lib/pdf-generator';
 import { toBanglaNumber } from '@/lib/utils';
 import {
@@ -28,12 +29,14 @@ import {
   ChevronDown,
   Sparkles,
   CheckCircle2,
-  ArrowRight
+  ArrowRight,
+  LayoutTemplate
 } from 'lucide-react';
 
 export default function SinglePagePdfMaker() {
   // Three primary options: Form, Nid, Proff
   const [activeOption, setActiveOption] = useState<ActiveOption>('Form');
+  const [view, setView] = useState<'maker' | 'template'>('maker');
 
   // Form states for the 3 options
   const [formData, setFormData] = useState<FormDataState>(DEFAULT_FORM_DATA);
@@ -302,16 +305,31 @@ export default function SinglePagePdfMaker() {
               </span>
               <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/25">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {activeOption === 'Form' && 'Form (আবেদন)'}
-                {activeOption === 'Nid' && 'NiD (আইডি কার্ড)'}
-                {activeOption === 'Proff' && 'Proff (প্রত্যয়ন)'}
+                {view === 'template' ? 'Template (টেমপ্লেট ক্লোন)' : activeOption === 'Form' ? 'Form (আবেদন)' : activeOption === 'Nid' ? 'NiD (আইডি কার্ড)' : 'Proff (প্রত্যয়ন)'}
               </span>
             </div>
           </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* View toggle: Maker / Template clone */}
+            <div className="inline-flex rounded-xl border border-slate-700/80 overflow-hidden">
+              <button
+                onClick={() => setView('maker')}
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold transition-colors ${view === 'maker' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+              >
+                মেকার
+              </button>
+              <button
+                onClick={() => setView('template')}
+                className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold inline-flex items-center gap-1 transition-colors ${view === 'template' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-300 hover:bg-slate-800'}`}
+              >
+                <LayoutTemplate className="w-3.5 h-3.5" />
+                টেমপ্লেট
+              </button>
+            </div>
             {/* MENU BUTTON (Contains Form, NiD, Proff) */}
+            {view === 'maker' && (
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`relative inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold rounded-xl border transition-all duration-200 shadow-sm cursor-pointer ${
@@ -336,9 +354,15 @@ export default function SinglePagePdfMaker() {
                 }`}
               />
             </button>
+            )}
           </div>
         </div>
       </header>
+
+      {view === 'template' ? (
+        <TemplateMakerView />
+      ) : (
+        <>
 
       {/* ================= STATUS BANNER ================= */}
       {statusMessage && (
@@ -1477,6 +1501,8 @@ export default function SinglePagePdfMaker() {
           </div>
         </div>
       </footer>
+        </>
+      )}
     </div>
   );
 }

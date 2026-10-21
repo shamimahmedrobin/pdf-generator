@@ -1,11 +1,12 @@
 import React from 'react';
+import {BASE_PATH} from '@/lib/base-path';
 
 // Official National Emblem of Bangladesh (গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের প্রতীক - ফুল কালার সিল)
 export const BangladeshEmblem: React.FC<{ className?: string }> = ({ className = 'w-9 h-9' }) => {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/bd-govt-seal.svg"
+      src={`${BASE_PATH}/bd-govt-seal.svg`}
       alt="গণপ্রজাতন্ত্রী বাংলাদেশ সরকারের প্রতীক"
       className={`${className} object-contain shrink-0`}
       crossOrigin="anonymous"
@@ -21,7 +22,7 @@ export const GoldenWatermarkEmblem: React.FC<{
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/National_emblem_of_Bangladesh.svg"
+      src={`${BASE_PATH}/National_emblem_of_Bangladesh.svg`}
       alt="বাংলাদেশের জাতীয় প্রতীক জলছাপ"
       className={`${className} object-contain select-none pointer-events-none`}
       style={style}
