@@ -7,6 +7,7 @@ import {
   Download,
   Eraser,
   FileUp,
+  LayoutTemplate,
   MousePointer2,
   PencilLine,
   Plus,
@@ -26,6 +27,8 @@ import {
   saveTemplateMetas,
   uid,
 } from '@/lib/template-store';
+import {BASE_PATH} from '@/lib/base-path';
+import {TEMPLATE_PRESETS, type TemplatePreset} from '@/lib/template-presets';
 import {
   downloadBlob,
   generateFromTemplate,
@@ -151,6 +154,38 @@ export default function TemplateMakerView() {
       setStatus(`✓ "${meta.name}" টেমপ্লেট তৈরি হয়েছে — এখন যেখানে তথ্য বসবে সেখানে টেনে বক্স আঁকুন।`);
     } catch {
       setStatus('⚠️ PDF-টা পড়া যায়নি। অন্য একটা PDF দিয়ে চেষ্টা করুন।');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleLoadPreset = async (preset: TemplatePreset) => {
+    setBusy(true);
+    setStatus('রেডিমেড টেমপ্লেট লোড হচ্ছে...');
+    try {
+      const res = await fetch(`${BASE_PATH}/${preset.pdfPath}`);
+      if (!res.ok) throw new Error('fetch failed');
+      const bytes = await res.arrayBuffer();
+      const doc = await openPdf(bytes);
+      const first = await doc.getPage(1);
+      const vp = first.getViewport({scale: 1});
+      const meta: PdfTemplateMeta = {
+        id: uid('tpl'),
+        name: preset.title,
+        createdAt: nowMs(),
+        pageCount: doc.numPages,
+        pageWidth: vp.width,
+        pageHeight: vp.height,
+        fields: preset.fields.map((f) => ({...f, id: uid('fld')})),
+      };
+      await savePdfBytes(meta.id, bytes);
+      const next = [meta, ...metas];
+      persistMetas(next);
+      await openTemplate(meta);
+      setMode('fill');
+      setStatus(`✓ "${preset.title}" তৈরি — বাম পাশের ঘরগুলো পূরণ করে "PDF তৈরি করুন" চাপুন। ঘরের জায়গা বদলাতে চাইলে "ফিল্ড বসান" মোডে যান।`);
+    } catch {
+      setStatus('⚠️ রেডিমেড টেমপ্লেটটা লোড করা যায়নি।');
     } finally {
       setBusy(false);
     }
@@ -309,6 +344,17 @@ export default function TemplateMakerView() {
           নতুন PDF আপলোড
           <input type="file" accept="application/pdf" onChange={handleUpload} className="hidden" />
         </label>
+        {TEMPLATE_PRESETS.map((preset) => (
+          <button
+            key={preset.id}
+            onClick={() => handleLoadPreset(preset)}
+            disabled={busy}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-100 text-xs sm:text-sm font-semibold border border-slate-600 transition-colors"
+          >
+            <LayoutTemplate className="w-4 h-4 text-emerald-400" />
+            রেডিমেড: {preset.title}
+          </button>
+        ))}
         {active && (
           <>
             <div className="inline-flex rounded-xl border border-slate-700 overflow-hidden">

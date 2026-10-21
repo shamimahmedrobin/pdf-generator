@@ -1,0 +1,68 @@
+import type {TemplateField} from '@/types/template';
+
+/**
+ * Built-in templates bundled with the app.
+ *
+ * The Form-2 preset ships the official Election Commission correction form
+ * as a blank template PDF (public/templates/form2-official.pdf — the sample's
+ * filled values were removed, so no personal data is bundled) with every
+ * fillable position pre-mapped from the original document's text layout.
+ * Positions are PDF points, origin = top-left, page = A4 (595 × 842).
+ */
+export interface TemplatePreset {
+  id: string;
+  title: string;
+  /** Path inside public/, without leading slash */
+  pdfPath: string;
+  fields: Array<Omit<TemplateField, 'id'>>;
+}
+
+type FieldSpec = [name: string, x: number, y: number, w: number, h: number, fontSize: number];
+
+const spec = (s: FieldSpec): Omit<TemplateField, 'id'> => ({
+  name: s[0],
+  page: 0,
+  x: s[1],
+  y: s[2],
+  w: s[3],
+  h: s[4],
+  fontSize: s[5],
+  font: 'solaiman',
+  color: '#000000',
+  cover: false,
+});
+
+export const FORM2_PRESET: TemplatePreset = {
+  id: 'form2-official',
+  title: 'অফিসিয়াল ফরম-২ (সংশোধন আবেদন)',
+  pdfPath: 'templates/form2-official.pdf',
+  fields: ([
+    ['ক্রমিক নম্বর', 450, 102, 95, 15, 10],
+    ['নাম', 188, 143, 350, 15, 10],
+    ['জাতীয় পরিচিতি নম্বর (NID)', 188, 163, 350, 15, 10],
+    ['অভিভাবকের নাম', 188, 203, 350, 15, 10],
+    ['অভিভাবকের জাতীয় পরিচিতি নম্বর', 188, 223, 350, 15, 10],
+    ['বিষয়', 52, 311, 114, 14, 8],
+    ['বর্তমান তথ্য', 172, 311, 126, 14, 8],
+    ['সংশোধিত তথ্য', 302, 311, 126, 14, 8],
+    ['দলিলাদি / মন্তব্য', 432, 311, 111, 14, 10],
+    ['ফি এর পরিমাণ', 477, 453, 66, 15, 10],
+    ['ফি জমা দানের রশিদ', 199, 470, 220, 15, 10],
+    ['সংযুক্ত দলিলাদির বিবরণ', 235, 487, 308, 15, 10],
+    ['অভিভাবকের নাম (স্বাক্ষর অংশ)', 73, 543, 168, 13, 10],
+    ['অভিভাবকের ঠিকানা', 83, 558, 158, 13, 10],
+    ['অভিভাবকের মোবাইল নম্বর', 108, 573, 133, 13, 10],
+    ['অভিভাবকের ই-মেইল', 132, 588, 109, 13, 10],
+    ['আবেদনকারীর নাম (স্বাক্ষর অংশ)', 393, 543, 150, 13, 10],
+    ['আবেদনকারীর ঠিকানা', 403, 558, 140, 13, 10],
+    ['আবেদনকারীর মোবাইল নম্বর', 428, 573, 115, 13, 10],
+    ['আবেদনকারীর ই-মেইল', 452, 588, 91, 13, 10],
+    ['রশিদ: ক্রমিক নম্বর', 450, 652, 95, 15, 10],
+    ['রশিদ: আবেদনকারীর নাম ও NID', 307, 671, 236, 15, 10],
+    ['রশিদ: অভিভাবকের নাম ও NID', 307, 688, 236, 15, 10],
+    ['রশিদ: আবেদনের তারিখ', 307, 722, 160, 15, 10],
+    ['রশিদ: প্রদানের তারিখ', 307, 739, 160, 15, 10],
+  ] as FieldSpec[]).map(spec),
+};
+
+export const TEMPLATE_PRESETS: TemplatePreset[] = [FORM2_PRESET];
